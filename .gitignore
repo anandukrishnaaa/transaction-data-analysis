@@ -1,0 +1,3 @@
+# Project level .gitignore file
+.env
+dataset
