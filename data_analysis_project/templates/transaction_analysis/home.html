@@ -4,5 +4,9 @@
     Homepage
 {% endblock title %}
 {% block content %}
-    <h1>Hello {{ first_name }}</h1>
+    {% if not first_name %}
+        No data passed
+    {% else %}
+        {{ first_name }}
+    {% endif %}
 {% endblock content %}
