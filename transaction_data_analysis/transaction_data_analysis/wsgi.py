@@ -1,5 +1,5 @@
 """
-WSGI config for data_analysis_project project.
+WSGI config for transaction_data_analysis project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "data_analysis_project.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "transaction_data_analysis.settings")
 
 application = get_wsgi_application()

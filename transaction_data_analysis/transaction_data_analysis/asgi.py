@@ -1,5 +1,5 @@
 """
-ASGI config for data_analysis_project project.
+ASGI config for transaction_data_analysis project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "data_analysis_project.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "transaction_data_analysis.settings")
 
 application = get_asgi_application()
