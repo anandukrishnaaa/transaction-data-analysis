@@ -1,0 +1,10 @@
+<!-- main / dashboard.html -->
+{% extends "main/base.html" %}
+{% block title %}
+    Dashboard
+{% endblock title %}
+{% block content %}
+    <div>
+        {% for data in data %}<p>{{ data }}</p>{% endfor %}
+    </div>
+{% endblock content %}

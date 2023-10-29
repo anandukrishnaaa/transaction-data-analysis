@@ -80,8 +80,8 @@ WSGI_APPLICATION = "transaction_data_analysis.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": f"{os.getenv("DATABASE_NAME")}.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / f"{os.getenv("DATABASE_NAME")}.sqlite3",
     }
 }
 

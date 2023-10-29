@@ -1,3 +1,6 @@
 # Project level .gitignore file
 .env
 dataset
+**/__pycache__/
+*.sqlite3
+migrations
