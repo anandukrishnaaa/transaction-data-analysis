@@ -1,12 +1,13 @@
 <!-- main / upload.html -->
 {% extends "main/base.html" %}
+{% load django_bootstrap5 %}
 {% block title %}
     Upload
 {% endblock title %}
 {% block content %}
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Upload</button>
+        {% bootstrap_form file_upload_form layout='floating' %}
+        {% bootstrap_button button_type="submit" content="Upload" %}
     </form>
 {% endblock content %}

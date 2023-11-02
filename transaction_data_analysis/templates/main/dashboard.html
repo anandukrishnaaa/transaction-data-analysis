@@ -1,10 +1,9 @@
 <!-- main / dashboard.html -->
 {% extends "main/base.html" %}
+{% load django_bootstrap5 %}
 {% block title %}
     Dashboard
 {% endblock title %}
 {% block content %}
-    <div>
-        {% for data in data %}<p>{{ data }}</p>{% endfor %}
-    </div>
+    {% for data in data %}{{ data }}{% endfor %}
 {% endblock content %}

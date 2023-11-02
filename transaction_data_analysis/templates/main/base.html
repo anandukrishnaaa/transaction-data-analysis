@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <!-- main / base.html -->
+{% load django_bootstrap5 %}
 <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -10,9 +11,48 @@
             {% block title %}
             {% endblock title %}
         </title>
+        <!-- Load django-bootstrap5 -->
+        {% bootstrap_css %}
+        {% bootstrap_javascript %}
     </head>
     <body>
-        {% block content %}
-        {% endblock content %}
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container">
+                <a class="navbar-brand" href="#">Data Drill 🪛</a>
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#navbarNav"
+                        aria-controls="navbarNav"
+                        aria-expanded="false"
+                        aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ml-auto">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item">
+                                <span class="nav-link">Logged in as: {{ user.username }}</span>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'login' %}">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'register' %}">Register</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div class="container">
+            {% load django_bootstrap5 %}
+            {% block content %}
+            {% endblock content %}
+        </div>
     </body>
 </html>

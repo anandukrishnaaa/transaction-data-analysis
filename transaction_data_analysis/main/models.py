@@ -10,7 +10,8 @@ from django.db import models
 class FileUpload(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     file_id = models.CharField(max_length=255)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     file_path = models.FileField(
         upload_to="media/uploads/", validators=[FileExtensionValidator(["csv"])]
     )
