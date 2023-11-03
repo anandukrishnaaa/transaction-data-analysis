@@ -9,6 +9,7 @@ black = "*"
 python-dotenv = "*"
 djlint = "*"
 pandas = "*"
+django-bootstrap5 = "*"
 
 [dev-packages]
 
