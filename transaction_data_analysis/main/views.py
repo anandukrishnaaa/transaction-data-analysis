@@ -7,9 +7,9 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .models import FileUpload
-from .forms import UploadFileForm, CustomUserCreationForm
-from .utils.data_drill import perform_analysis
-from datetime import datetime
+from .forms import UploadFileForm, CustomUserCreationForm, ReplaceFileForm
+from django.http import JsonResponse
+import pandas as pd
 
 
 def register(request):
@@ -47,34 +47,70 @@ def upload_file(request):
     if request.method == "POST":
         file_upload_form = UploadFileForm(request.POST, request.FILES)
         if file_upload_form.is_valid():
-            file = request.FILES["file"]
-            if not file.name.endswith(".csv"):
-                context = {
-                    "file_upload_form": file_upload_form,
-                    "error_message": "File is not CSV type",
-                }
-                template_name = "main/upload.html"
-                return render(request, template_name, context)
-            FileUpload.objects.create(
-                user=request.user, file_id=file.name, file_path=file
+            uploaded_file = request.FILES["file"]
+            file_uploaded = FileUpload.objects.create(
+                user=request.user, file_id=uploaded_file.name, file_path=uploaded_file
             )
-            return redirect("dashboard")
+            df = pd.read_csv(file_uploaded.file_path)
+            file_details = df.head(10).to_html() + df.describe().to_html()
+            file_replace_form = ReplaceFileForm()
+            return render(
+                request,
+                "main/upload.html",
+                {
+                    "file_details": file_details,
+                    "file_id": file_uploaded.id,
+                    "file_replace_form": file_replace_form,
+                    "file_upload_form": file_upload_form,
+                },
+            )
     else:
         file_upload_form = UploadFileForm()
-    template_name = "main/upload.html"
-    context = {"file_upload_form": file_upload_form}
-    return render(request, template_name, context)
+        file_replace_form = ReplaceFileForm()  # Create an instance of ReplaceFileForm
+    return render(
+        request,
+        "main/upload.html",
+        {
+            "file_upload_form": file_upload_form,
+            "file_replace_form": file_replace_form,
+            "file_id": None,
+        },
+    )
 
 
 @login_required
-def dashboard(request):
-    file_uploads = FileUpload.objects.filter(user=request.user)
-    data = []
-    for file_upload in file_uploads:
-        data.append(file_upload.file_path)
-    template_name = "main/dashboard.html"
-    context = {"data": data}
-    return render(request, template_name, context)
+def replace_file(request, file_id):
+    file_upload = FileUpload.objects.get(id=file_id)
+    if request.method == "POST":
+        file_replace_form = ReplaceFileForm(request.POST, request.FILES)
+        if file_replace_form.is_valid():
+            new_uploaded_file = file_replace_form.cleaned_data["new_file"]
+            file_upload.file_path = new_uploaded_file
+            file_upload.save()
+            df = pd.read_csv(file_upload.file_path)
+            file_details = df.head(10).to_html() + df.describe().to_html()
+            return render(
+                request,
+                "main/upload.html",
+                {
+                    "file_replace_form": file_replace_form,
+                    "file_details": file_details,
+                    "file_id": file_id,
+                },
+            )
+
+    else:
+        file_replace_form = ReplaceFileForm()
+    return redirect("upload")
+
+
+@login_required
+def dashboard(request, file_id):
+    # Add your data analysis logic here
+    file_upload = FileUpload.objects.get(id=file_id)
+    df = pd.read_csv(file_upload.file_path)
+    # Perform data analysis on 'df' as needed
+    return render(request, "main/dashboard.html", {"file_id": file_id})
 
 
 def logout_view(request):

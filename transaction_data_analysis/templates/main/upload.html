@@ -1,13 +1,27 @@
-<!-- main / upload.html -->
 {% extends "main/base.html" %}
 {% load django_bootstrap5 %}
+{% load static %}
 {% block title %}
     Upload
 {% endblock title %}
 {% block content %}
-    <form method="post" enctype="multipart/form-data">
+    <div class="alert"></div>
+    <form id="file-upload" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {% bootstrap_form file_upload_form layout='floating' %}
         {% bootstrap_button button_type="submit" content="Upload" %}
     </form>
+    <div id="file-details" style="margin-top: 15px;">{{ file_details|safe }}</div>
+    <progress id="upload-progress" value="0" max="100"></progress>
+    <div id="replace-file-form" style="display: none;">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% bootstrap_form file_replace_form layout='floating' %}
+            {% bootstrap_button button_type="submit" content="Replace file" %}
+        </form>
+    </div>
+    <a href="{% if file_id %}{% url 'dashboard' file_id %}{% endif %}"
+       class="btn btn-primary">Perform Analysis</a>
+    <button id="show-replace-form" class="btn btn-secondary">Replace File</button>
+</div>
 {% endblock content %}

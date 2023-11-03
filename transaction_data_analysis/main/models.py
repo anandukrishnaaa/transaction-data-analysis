@@ -4,8 +4,6 @@ from django.core.validators import FileExtensionValidator
 
 # Create your models here.
 
-from django.db import models
-
 
 class FileUpload(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
