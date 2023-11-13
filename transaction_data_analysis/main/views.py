@@ -7,8 +7,8 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .models import FileUpload
-from .forms import UploadFileForm, CustomUserCreationForm, ReplaceFileForm
-from django.http import JsonResponse
+from .forms import UploadFileForm, CustomUserCreationForm
+from .utils import extra
 import pandas as pd
 
 
@@ -23,7 +23,7 @@ def register(request):
             return redirect("login")
     else:
         register_form = CustomUserCreationForm()
-    template_name = "main/register.html"
+    template_name = "register.html"
     context = {"register_form": register_form}
     return render(request, template_name, context)
 
@@ -37,7 +37,7 @@ def login_view(request):
             return redirect("upload")
     else:
         login_form = AuthenticationForm()
-    template_name = "main/login.html"
+    template_name = "login.html"
     context = {"login_form": login_form}
     return render(request, template_name, context)
 
@@ -48,60 +48,30 @@ def upload_file(request):
         file_upload_form = UploadFileForm(request.POST, request.FILES)
         if file_upload_form.is_valid():
             uploaded_file = request.FILES["file"]
+            size = uploaded_file.size
             file_uploaded = FileUpload.objects.create(
                 user=request.user, file_id=uploaded_file.name, file_path=uploaded_file
             )
-            df = pd.read_csv(file_uploaded.file_path)
-            file_details = df.head(10).to_html() + df.describe().to_html()
-            file_replace_form = ReplaceFileForm()
+            uploaded_file_details = extra.file_preview(file_uploaded, size)
+            context = {
+                "uploaded_file_details": uploaded_file_details,
+            }
+            template = "upload.html"
             return render(
                 request,
-                "main/upload.html",
-                {
-                    "file_details": file_details,
-                    "file_id": file_uploaded.id,
-                    "file_replace_form": file_replace_form,
-                    "file_upload_form": file_upload_form,
-                },
+                template,
+                context,
             )
     else:
         file_upload_form = UploadFileForm()
-        file_replace_form = ReplaceFileForm()  # Create an instance of ReplaceFileForm
-    return render(
-        request,
-        "main/upload.html",
-        {
-            "file_upload_form": file_upload_form,
-            "file_replace_form": file_replace_form,
-            "file_id": None,
-        },
-    )
-
-
-@login_required
-def replace_file(request, file_id):
-    file_upload = FileUpload.objects.get(id=file_id)
-    if request.method == "POST":
-        file_replace_form = ReplaceFileForm(request.POST, request.FILES)
-        if file_replace_form.is_valid():
-            new_uploaded_file = file_replace_form.cleaned_data["new_file"]
-            file_upload.file_path = new_uploaded_file
-            file_upload.save()
-            df = pd.read_csv(file_upload.file_path)
-            file_details = df.head(10).to_html() + df.describe().to_html()
-            return render(
-                request,
-                "main/upload.html",
-                {
-                    "file_replace_form": file_replace_form,
-                    "file_details": file_details,
-                    "file_id": file_id,
-                },
-            )
-
-    else:
-        file_replace_form = ReplaceFileForm()
-    return redirect("upload")
+        return render(
+            request,
+            "upload.html",
+            {
+                "file_upload_form": file_upload_form,
+                "uploaded_file_details": None,
+            },
+        )
 
 
 @login_required
@@ -110,7 +80,7 @@ def dashboard(request, file_id):
     file_upload = FileUpload.objects.get(id=file_id)
     df = pd.read_csv(file_upload.file_path)
     # Perform data analysis on 'df' as needed
-    return render(request, "main/dashboard.html", {"file_id": file_id})
+    return render(request, "dashboard.html", {"file_id": file_id})
 
 
 def logout_view(request):
@@ -119,5 +89,5 @@ def logout_view(request):
 
 
 def home(request):
-    template_name = "main/home.html"
+    template_name = "home.html"
     return render(request, template_name)

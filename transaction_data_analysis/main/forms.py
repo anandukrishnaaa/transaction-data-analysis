@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 
 
 class UploadFileForm(forms.Form):
-    file = forms.FileField(validators=[FileExtensionValidator(["csv"])])
+    file = forms.FileField(validators=[FileExtensionValidator(["csv"])], label="")
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -17,7 +17,3 @@ class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = User
         fields = ["name", "email", "username", "password1", "password2"]
-
-
-class ReplaceFileForm(forms.Form):
-    new_file = forms.FileField(validators=[FileExtensionValidator(["csv"])])
