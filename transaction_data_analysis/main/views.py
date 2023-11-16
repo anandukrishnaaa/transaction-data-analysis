@@ -8,8 +8,8 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .models import FileUpload
 from .forms import UploadFileForm, CustomUserCreationForm
-from .utils import extra
-import pandas as pd
+from .utils import data_analysis
+from plotly.offline import plot
 
 
 def register(request):
@@ -52,7 +52,7 @@ def upload_file(request):
             file_uploaded = FileUpload.objects.create(
                 user=request.user, file_id=uploaded_file.name, file_path=uploaded_file
             )
-            uploaded_file_details = extra.file_preview(file_uploaded, size)
+            uploaded_file_details = {"file_id": file_uploaded.id, "file_size": size}
             context = {
                 "uploaded_file_details": uploaded_file_details,
             }
@@ -74,13 +74,30 @@ def upload_file(request):
         )
 
 
-@login_required
+# @login_required
 def dashboard(request, file_id):
     # Add your data analysis logic here
-    file_upload = FileUpload.objects.get(id=file_id)
-    df = pd.read_csv(file_upload.file_path)
-    # Perform data analysis on 'df' as needed
-    return render(request, "dashboard.html", {"file_id": file_id})
+    # file_upload = FileUpload.objects.get(id=file_id)
+    # da = data_analysis.DataAnalysis(file_upload.file_path)
+    uploaded_file_path = r"C:\Users\AK\Projects\code\coding-projects\transaction-data-analysis\dataset\sample.csv"
+    da = data_analysis.DataAnalysis(uploaded_file_path)
+    exploratory_analysis = da.exploratory_analysis()
+    univariate_analysis = da.univariate_data_visualization()
+    bivariate_analysis = da.bivariate_data_visualization()
+    plot_chart = univariate_analysis.get("transaction_plot")
+    context = {
+        "file_id": file_id,
+        "exploratory_analysis": exploratory_analysis,
+        "univariate_analysis": univariate_analysis,
+        "bivariate_analysis": bivariate_analysis,
+        "chart": plot_chart.to_html(full_html=False),
+    }
+    # processed_data = data_analysis.file_preview(file_upload)
+    return render(
+        request,
+        "dashboard.html",
+        context,
+    )
 
 
 def logout_view(request):

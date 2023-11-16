@@ -14,7 +14,7 @@
                     {% bootstrap_messages %}
                     <p>Upload the file to be analysed</p>
                     {% bootstrap_form file_upload_form layout='floating' %}
-                    {% bootstrap_button button_type="submit" id="btnFileUpload" content="Upload" %}
+                    {% bootstrap_button button_type="submit" content="Upload" %}
                 </div>
             </form>
         {% else %}
@@ -24,16 +24,10 @@
         {% endif %}
         {% if uploaded_file_details %}
             <div>
-                <div>
-                    <p>
-                        Uploaded file size:
-                        {{ uploaded_file_details.size|filesizeformat }}
-                    </p>
-                </div>
-                <div>
-                    <div class="overflow-auto">{{ uploaded_file_details.head|safe }}</div>
-                    <div class="overflow-auto">{{ uploaded_file_details.desc|safe }}</div>
-                </div>
+                <p>Uploaded file size: {{ uploaded_file_details.file_size|filesizeformat }}</p>
+                <button onclick="location.href='{% url 'dashboard' file_id=uploaded_file_details.file_id|default:"" %}'">
+                    Go to Dashboard
+                </button>
             </div>
         {% endif %}
     </div>

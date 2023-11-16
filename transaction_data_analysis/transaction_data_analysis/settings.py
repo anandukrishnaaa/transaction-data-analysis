@@ -148,3 +148,44 @@ AUTO_LOGOUT = {
 LOGIN_URL = "login"
 LOGOUT_REDIRECT_URL = "/"
 
+# Project logs
+TRANSACTION_DATA_ANALYSIS_PATH = BASE_DIR / "logs/transaction_data_analysis.log"
+MAIN_LOG_FILE_PATH = BASE_DIR / "main/logs/main.log"
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+           "class": "logging.StreamHandler",
+           "formatter": "verbose",
+       },
+        "project_file": {
+            "class": "logging.FileHandler",
+            "filename": TRANSACTION_DATA_ANALYSIS_PATH,
+            "formatter": "verbose",
+        },
+        "app_file": {
+            "class": "logging.FileHandler",
+            "filename": MAIN_LOG_FILE_PATH,
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "project": {
+            "level": "DEBUG",
+            "handlers":  ["project_file"], # Use ["project_file", "console"] if console output is to be enabled 
+        },
+        "main": {
+            "level": "DEBUG",
+            "handlers":  ["app_file"], # Use ["project_file", "console"] if console output is to be enabled 
+        },
+    },
+}
