@@ -12,5 +12,5 @@ class FileUploadAdmin(admin.ModelAdmin):
 
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ("user", "file_id", "report_json")
+    list_display = ("user", "file_id", "report")
     readonly_fields = ("created_at", "updated_at")

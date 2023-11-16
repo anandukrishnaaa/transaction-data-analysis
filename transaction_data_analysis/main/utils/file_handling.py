@@ -7,6 +7,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from .logger_config import set_logger
 
+
 ic = set_logger(
     print_to_console=False
 )  # Set print_to_console = True for console outputs

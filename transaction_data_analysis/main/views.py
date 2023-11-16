@@ -6,10 +6,15 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from .models import FileUpload
+from .models import FileUpload, Report
 from .forms import UploadFileForm, CustomUserCreationForm
-from .utils import data_analysis
-from plotly.offline import plot
+from .utils import file_handling
+
+from .utils.logger_config import set_logger
+
+ic = set_logger(
+    print_to_console=False
+)  # Set print_to_console = True for console outputs
 
 
 def register(request):
@@ -78,25 +83,26 @@ def upload_file(request):
 def dashboard(request, file_id):
     # Add your data analysis logic here
     # file_upload = FileUpload.objects.get(id=file_id)
-    # da = data_analysis.DataAnalysis(file_upload.file_path)
+    # da = file_handling.DataAnalysis(file_upload.file_path)
     uploaded_file_path = r"C:\Users\AK\Projects\code\coding-projects\transaction-data-analysis\dataset\sample.csv"
-    da = data_analysis.DataAnalysis(uploaded_file_path)
+    da = file_handling.DataAnalysis(uploaded_file_path)
     exploratory_analysis = da.exploratory_analysis()
     univariate_analysis = da.univariate_data_visualization()
     bivariate_analysis = da.bivariate_data_visualization()
-    plot_chart = univariate_analysis.get("transaction_plot")
-    context = {
-        "file_id": file_id,
+    analysis_result = {
         "exploratory_analysis": exploratory_analysis,
         "univariate_analysis": univariate_analysis,
         "bivariate_analysis": bivariate_analysis,
-        "chart": plot_chart.to_html(full_html=False),
     }
-    # processed_data = data_analysis.file_preview(file_upload)
+    # processed_data = file_handling.file_preview(file_upload)
+    # Convert the dictionary to a JSON string
+    # report = Report.objects.create(
+    #     user=request.user, file_id=file_id, report_json=report_json
+    # )
     return render(
         request,
         "dashboard.html",
-        context,
+        context=analysis_result,
     )
 
 

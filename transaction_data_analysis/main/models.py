@@ -20,4 +20,4 @@ class Report(models.Model):
     file_id = models.ForeignKey(FileUpload, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    report_json = models.JSONField()
+    report = models.TextField()

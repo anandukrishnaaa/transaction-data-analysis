@@ -5,6 +5,16 @@
     Dashboard
 {% endblock title %}
 {% block content %}
-    {{ file_id }}
-    {{ chart | safe }}
+    <div>
+        <div id="plot">{{ univariate_analysis.transaction_plot.to_html | safe }}</div>
+        <div id="plot">{{ univariate_analysis.transaction_distribution_plot.to_html | safe }}</div>
+        <div id="plot">{{ univariate_analysis.non_fraud_vs_fraud_plot.to_html | safe }}</div>
+    </div>
+    <div>
+        <div id="plot">{{ bivariate_analysis.transaction_type_plot_1.to_html | safe }}</div>
+        <div id="plot">{{ bivariate_analysis.transaction_type_plot_2.to_html | safe }}</div>
+        <div id="plot">{{ bivariate_analysis.fraud_amount_plot.to_html | safe }}</div>
+        <div id="plot">{{ bivariate_analysis.top_fraud_plot.to_html | safe }}</div>
+        <div id="plot">{{ bivariate_analysis.pre_balance_transaction_plot.to_html | safe }}</div>
+    </div>
 {% endblock content %}
