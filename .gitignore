@@ -3,5 +3,9 @@
 dataset
 **/__pycache__/
 *.sqlite3
+**/.pyc
+**/*.log
 migrations
-*/media/uploads
+**/media/uploads
+.vscode
+.venv

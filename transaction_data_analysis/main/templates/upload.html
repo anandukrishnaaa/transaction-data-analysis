@@ -25,9 +25,22 @@
         {% if uploaded_file_details %}
             <div>
                 <p>Uploaded file size: {{ uploaded_file_details.file_size|filesizeformat }}</p>
-                <button onclick="location.href='{% url 'dashboard' file_id=uploaded_file_details.file_id|default:"" %}'">
+                <button class="btn btn-success"
+                        onclick="location.href='{% url 'dashboard' file_id=uploaded_file_details.file_id|default:"" %}'">
                     Go to Dashboard
                 </button>
+            </div>
+        {% endif %}
+        {% if user_reports %}
+            <div>
+                <h3>Your Reports:</h3>
+                <ul>
+                    {% for report in user_reports %}
+                        <li>
+                            <a href="{% url 'get_report' report_id=report.id %}">Report for {{ report.file_id.file_id }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
             </div>
         {% endif %}
     </div>

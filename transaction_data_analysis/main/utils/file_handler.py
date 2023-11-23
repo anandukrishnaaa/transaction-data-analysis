@@ -165,14 +165,17 @@ class DataAnalysis:
         transaction_type_plot_1.add_trace(
             go.Bar(
                 x=df["type"],
-                y=df.groupby(["type", "isFraud"]).size().unstack().sum(axis=1),
+                y=df.groupby(["type", "isFraud"], observed=False)
+                .size()
+                .unstack()
+                .sum(axis=1),
                 name="Non-Fraud",
             )
         )
         transaction_type_plot_1.add_trace(
             go.Bar(
                 x=df["type"],
-                y=df.groupby(["type", "isFraud"]).size().unstack()[1],
+                y=df.groupby(["type", "isFraud"], observed=False).size().unstack()[1],
                 name="Fraud",
             )
         )
@@ -349,6 +352,12 @@ class DataAnalysis:
 
         # Pass the figure to the template
         ic(corr_matrix_plot)  # TODO: for out
+
+        multivariate_data_visualization_result = {
+            "corr_matrix_plot": ic(corr_matrix_plot)
+        }
+
+        return multivariate_data_visualization_result
 
     # Pass the figure to the template
     def __init__(self, file_path):

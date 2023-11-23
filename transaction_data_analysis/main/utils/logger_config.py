@@ -1,5 +1,11 @@
+# utils / logger_config.py
+
 from icecream import ic
 import logging
+
+"""
+Custom logger used to generate log files that work with the python `icecream` debugging package.
+"""
 
 
 def set_logger(print_to_console=False):
