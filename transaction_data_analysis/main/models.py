@@ -4,8 +4,6 @@ from django.core.validators import FileExtensionValidator
 
 # Create your models here.
 
-from django.db import models
-
 
 class FileUpload(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -13,5 +11,13 @@ class FileUpload(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     file_path = models.FileField(
-        upload_to="media/uploads/", validators=[FileExtensionValidator(["csv"])]
+        upload_to="uploads/", validators=[FileExtensionValidator(["csv"])]
     )
+
+
+class Report(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    file_id = models.ForeignKey(FileUpload, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    report = models.BinaryField()

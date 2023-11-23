@@ -1,0 +1,41 @@
+<!-- dashboard.html -->
+{% extends "base.html" %}
+{% load django_bootstrap5 %}
+{% load custom_filters %}
+{% load static %}
+{% block title %}
+    Dashboard
+{% endblock title %}
+{% block content %}
+    <h1 class="subheading"></h1>
+    <p>Data analysis result for uploaded file.</p>
+    {{ report_id }}
+    <a href="{% url 'get_report_pdf' report_id=report_id %}"
+       class="btn btn-primary">Show/Download as PDF</a>
+    <section id="charts" class="charts">
+        <div class="container-fluid mt-3 pt-5">
+            <div class="row">
+                <div class="col-md-4 box-data">{{ analysis_result.univariate_analysis.transaction_plot|to_div_html | safe }}</div>
+                <div class="col-md-4 box-data">
+                    {{ analysis_result.univariate_analysis.transaction_distribution_plot|to_div_html | safe }}
+                </div>
+                <div class="col-md-4 box-data">
+                    {{ analysis_result.univariate_analysis.non_fraud_vs_fraud_plot|to_div_html | safe }}
+                </div>
+                <div class="col-md-4 box-data">
+                    {{ analysis_result.bivariate_analysis.transaction_type_plot_1|to_div_html | safe }}
+                </div>
+                <div class="col-md-4 box-data">
+                    {{ analysis_result.bivariate_analysis.transaction_type_plot_2|to_div_html | safe }}
+                </div>
+                <div class="col-md-4 box-data">{{ analysis_result.bivariate_analysis.fraud_amount_plot|to_div_html | safe }}</div>
+                <div class="col-md-4 box-data">{{ analysis_result.bivariate_analysis.top_fraud_plot|to_div_html | safe }}</div>
+                <div class="col-md-4 box-data">
+                    {{ analysis_result.bivariate_analysis.pre_balance_transaction_plot|to_div_html | safe }}
+                </div>
+                <div class="col-md-4 box-data">{{ analysis_result.multivariate_analysis.corr_matrix_plot|to_div_html | safe }}</div>
+            </div>
+        </div>
+    </section>
+    {% comment  %} The `|to_div_html | safe` custom filter is used to circumvent the limitation attribute `full_html=True` being set by default in the plotly to_html method. When `full_html=True` is used, the stupid plotly library renders every single plot as an *entire html page*. This helps prevent that.  {% endcomment %}
+{% endblock content %}

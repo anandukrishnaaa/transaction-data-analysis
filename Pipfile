@@ -9,6 +9,12 @@ black = "*"
 python-dotenv = "*"
 djlint = "*"
 pandas = "*"
+django-bootstrap5 = "*"
+django-auto-logout = "*"
+plotly = "*"
+seaborn = "*"
+matplotlib = "*"
+icecream = "*"
 
 [dev-packages]
 

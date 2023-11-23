@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from dotenv import load_dotenv
+from datetime import timedelta
 import os
 
 load_dotenv()
@@ -53,6 +54,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_auto_logout.middleware.auto_logout",
+
 ]
 
 ROOT_URLCONF = "transaction_data_analysis.urls"
@@ -60,7 +63,7 @@ ROOT_URLCONF = "transaction_data_analysis.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [ BASE_DIR / "templates" ],
+        "DIRS": [ BASE_DIR / "main/templates" ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -68,6 +71,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                # "django_auto_logout.context_processors.auto_logout_client",
             ],
         },
     },
@@ -121,10 +125,67 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
-STATICFILES_DIR = [BASE_DIR / "static"]
+STATIC_URL = "main/static/"
+STATICFILES_DIRS = [BASE_DIR / "main/static"]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Base directory for media files
+MEDIA_URL = "main/media/"
+MEDIA_ROOT = BASE_DIR / "main/media"
+
+# django-auto-logout config
+AUTO_LOGOUT = {
+    "IDLE_TIME": timedelta(minutes=10),
+    "SESSION_TIME": timedelta(minutes=60),
+    "REDIRECT_TO_LOGIN_IMMEDIATELY": True,
+    "MESSAGE": "Your session has expired, please login again to continue.",
+}
+
+LOGIN_URL = "login"
+LOGOUT_REDIRECT_URL = "/"
+
+# Project logs
+TRANSACTION_DATA_ANALYSIS_PATH = BASE_DIR / "logs/transaction_data_analysis.log"
+MAIN_LOG_FILE_PATH = BASE_DIR / "main/logs/main.log"
+
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+           "class": "logging.StreamHandler",
+           "formatter": "verbose",
+       },
+        "project_file": {
+            "class": "logging.FileHandler",
+            "filename": TRANSACTION_DATA_ANALYSIS_PATH,
+            "formatter": "verbose",
+        },
+        "app_file": {
+            "class": "logging.FileHandler",
+            "filename": MAIN_LOG_FILE_PATH,
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "project": {
+            "level": "DEBUG",
+            "handlers":  ["project_file"], # Use ["project_file", "console"] if console output is to be enabled 
+        },
+        "main": {
+            "level": "DEBUG",
+            "handlers":  ["app_file"], # Use ["project_file", "console"] if console output is to be enabled 
+        },
+    },
+}

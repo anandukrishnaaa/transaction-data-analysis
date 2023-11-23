@@ -1,8 +1,8 @@
-<!-- main / signup.html -->
-{% extends "main/base.html" %}
+<!-- login.html -->
+{% extends "base.html" %}
 {% load django_bootstrap5 %}
 {% block title %}
-    Sign up
+    Login
 {% endblock title %}
 {% block content %}
     <div class="container">
@@ -12,8 +12,8 @@
                     <div class="card-body">
                         <form method="post" class="form">
                             {% csrf_token %}
-                            {% bootstrap_form register_form layout='floating' %}
-                            {% bootstrap_button button_type="submit" content="Sign up" %}
+                            {% bootstrap_form login_form layout='floating' %}
+                            {% bootstrap_button button_type="submit" content="Login" %}
                         </form>
                     </div>
                 </div>
