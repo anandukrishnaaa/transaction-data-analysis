@@ -26,6 +26,7 @@ body{
     background-image: url("../img/backgroundAnalysisImage.PNG");
     background-size: cover;
     background-repeat: no-repeat;
+
 }
 html{
    overflow-x: hidden;
@@ -297,7 +298,6 @@ td{
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
 }
 .wrapper{
     position: relative;
@@ -305,10 +305,12 @@ td{
     height: 450px;
     background: transparent;
     border: 5px solid var(--hover-color);
+    /* box-shadow: 0 0 20px var(--hover-color); */
     padding: 1rem;
     background-color: var(--bg-main);
     border-radius: 20px;
     color: var(--bg-textcolor);
+    overflow: hidden;
 }
 .wrapper .form-box{
     position: absolute;
@@ -360,6 +362,8 @@ td{
 }
 .wrapper .info-text.login{
     right: 0;
+    /* text-align: right;
+    padding: 40px 40px 60px 150px; */
    
 }
 .info-text h2{
@@ -370,7 +374,96 @@ td{
     
 }
 .info-text p{
-    margin: 0 2rem ;
     font-size: 16px;
+    color: var(--bg-textcolor);
+    padding: 0 2rem;
+}
+
+
+
+/* registeration form  */
+.registerFormBox{
+    margin-top: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.regwrapper{
+    position: relative;
+    width: 750px;
+    height: 861px;
+    background: transparent;
+    border: 5px solid var(--hover-color);
+    /* box-shadow: 0 0 20px var(--hover-color); */
+    padding: 1rem;
+    background-color: var(--bg-main);
+    border-radius: 20px;
+    color: var(--bg-textcolor);
+    overflow: hidden;
+}
+.regwrapper .regform-box{
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    /* background: red; */
+}
+.regform-box h2{
+    font-size: 32px;
     color: var(--hover-color);
+    text-align: center;
+    text-shadow: 2px 2px var(--background);
+    padding-top: 2rem;
+}
+.input-box{
+    margin-top: 2rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+.input-box .btn{
+   background-color: var(--hover-color);
+   color: var(--background);
+   border: none;
+   width: 10rem;
+    padding-top: 1rem;
+}
+.input-box .btn:hover{
+    background-color: var(--bg-textcolor);
+}
+.logreg-link{
+    padding-top: 1.5rem;
+}
+.logreg-link p{
+    font-size: .8rem;
+}
+.logreg-link a{
+    text-decoration: none;
+    color: var(--hover-color);
+    font-size: 1rem;
+}
+.regwrapper .info-text{
+    position: absolute;
+    top: 40%;
+    width: 50%;
+    height: 100%;
+    /* background-color: red; */
+    
+}
+.regwrapper .info-text.login{
+    right: 0;
+    /* text-align: right;
+    padding: 40px 40px 60px 150px; */
+   
+}
+.info-text h2{
+    font-size: 36px;
+    color: var(--hover-color);
+    line-height: 1.3;
+    text-transform: uppercase;
+    
+}
+.info-text p{
+    font-size: 16px;
+    color: var(--bg-textcolor);
+    padding: 0 2rem;
 }
