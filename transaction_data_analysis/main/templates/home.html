@@ -2,8 +2,46 @@
 {% extends "base.html" %}
 {% load django_bootstrap5 %}
 {% block title %}
-    Home
+Home
 {% endblock title %}
 {% block content %}
-    <h1>Welcome home!</h1>
+
+<!-- <div class="col-md-8 d-flex align-items-center" style="height: 350px; ">
+    <h1 class="mt-5">Welcome home!<br>{{ user.first_name }}</h1>
+</div> -->
+<div class="welcome-section content-hidden">
+    <div class="content-wrap ">
+        <ul class="fly-in-text text-center">
+            <li>Welcome</li>
+            <li>{{ user.first_name }}</li>
+        </ul>
+    </div>
+</div>
+
+
+
+<!-- java script for welcome user animation -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script type="text/javascript">
+    
+    $(function() {
+        
+        var welcomeSection = $('.welcome-section'),
+            enterButton = welcomeSection.find('.enter-button');
+        
+        setTimeout(function() {
+            welcomeSection.removeClass('content-hidden');
+        }, 500);
+        
+        // enterButton.on('click', function(e) {
+        //     e.preventDefault();
+        //     welcomeSection.addClass('content-hidden').fadeOut();
+        // });
+        
+        
+    })();
+    
+    
+    
+</script>
 {% endblock content %}
