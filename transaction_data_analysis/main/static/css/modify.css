@@ -13,9 +13,15 @@
     /* --bg-main:#427D9D;
     --hover-color:#9BBEC8; */
     --text-hover:rgb(0, 0, 0);
+    --background: #060606;
+    --form:#d0d6fa;
+}
+.dark-mode{
+    --background: #ffffff;
+    --bg-textcolor:#000000;
 }
 body{
-    background-color: rgb(6, 6, 6);
+    background-color: var(--background);
     color: var(--bg-textcolor);
     background-image: url("../img/backgroundAnalysisImage.PNG");
     background-size: cover;
@@ -88,8 +94,10 @@ span{
     visibility: visible;
     transform: scaleX(1);
 }
-.avatar a{
-    color: black;
+/* navbar dark and light mode */
+.navlinks li i.fa-solid{
+    font-size: 30px;
+    color: bg;
 }
 .btn{
     background-color: var(--bg-main);
@@ -281,3 +289,88 @@ td{
 
 /* choose file  */
 
+
+
+/* login form  */
+.loginFormBox{
+    margin-top: 2.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+.wrapper{
+    position: relative;
+    width: 750px;
+    height: 450px;
+    background: transparent;
+    border: 5px solid var(--hover-color);
+    padding: 1rem;
+    background-color: var(--bg-main);
+    border-radius: 20px;
+    color: var(--bg-textcolor);
+}
+.wrapper .form-box{
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    /* background: red; */
+}
+.form-box h2{
+    font-size: 32px;
+    color: var(--hover-color);
+    text-align: center;
+    text-shadow: 2px 2px var(--background);
+    padding-top: 2rem;
+}
+.input-box{
+    margin-top: 2rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+.input-box .btn{
+   background-color: var(--hover-color);
+   color: var(--background);
+   border: none;
+   width: 10rem;
+    padding-top: 1rem;
+}
+.input-box .btn:hover{
+    background-color: var(--bg-textcolor);
+}
+.logreg-link{
+    padding-top: 1.5rem;
+}
+.logreg-link p{
+    font-size: .8rem;
+}
+.logreg-link a{
+    text-decoration: none;
+    color: var(--hover-color);
+    font-size: 1rem;
+}
+.wrapper .info-text{
+    position: absolute;
+    top: 40%;
+    width: 50%;
+    height: 100%;
+    /* background-color: red; */
+    
+}
+.wrapper .info-text.login{
+    right: 0;
+   
+}
+.info-text h2{
+    font-size: 36px;
+    color: var(--hover-color);
+    line-height: 1.3;
+    text-transform: uppercase;
+    
+}
+.info-text p{
+    margin: 0 2rem ;
+    font-size: 16px;
+    color: var(--hover-color);
+}

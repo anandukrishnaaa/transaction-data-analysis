@@ -2,10 +2,10 @@
 {% extends "base.html" %}
 {% load django_bootstrap5 %}
 {% block title %}
-    Login
+Login
 {% endblock title %}
 {% block content %}
-    <div class="container">
+<!-- <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-6 pt-5">
                 <div class="card">
@@ -19,5 +19,29 @@
                 </div>
             </div>
         </div>
+    </div> -->
+<div class="loginFormBox">
+    <div class="wrapper text-center">
+        <div class="form-box login">
+            <h2>Login Form</h2>
+            <div class="input-box">
+                {% csrf_token %}
+                {% bootstrap_form login_form layout='floating' %}
+            </div>
+            <div class="input-box text-center">
+                {% bootstrap_button button_type="submit" content="Login" %}
+            </div>
+            <div class="logreg-link mt-3" >
+                <!-- add registertaion from link below -->
+                <p>Don't have an account? <a href="#" class="register-link">Sign Up</a></p>
+            </div>
+        </div>
+        <div class="info-text login">
+            <h2>Welcome Back!</h2>
+            <p>“You are a good friend and we welcome you.”</p>
+        </div>
     </div>
+</div>
+
+
 {% endblock content %}
