@@ -1,0 +1,12 @@
+<!-- dashboard.html -->
+{% extends "base.html" %}
+{% load django_bootstrap5 %}
+{% load static %}
+{% block title %}
+    ML Dashboard
+{% endblock title %}
+{% block content %}
+    <h1>Machine Learning Results</h1>
+    <p>Random Forest Prediction: {{ rf_prediction }}</p>
+    <p>Logistic Regression Prediction: {{ lr_prediction }}</p>
+{% endblock content %}

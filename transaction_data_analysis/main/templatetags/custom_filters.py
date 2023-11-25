@@ -10,6 +10,8 @@ Custom filter `to_div_html` used to render charts and plots in `div` tag, overri
 
 @register.filter
 def to_div_html(figure):
+    # Apply the theme to the figure
+    figure.update_layout(template="plotly_dark")
     # Modify other parameters or perform additional operations
     html_output = pio.to_html(
         figure,
@@ -18,6 +20,17 @@ def to_div_html(figure):
         config={
             "modeBarButtonsToRemove": ["select2d", "lasso2d", "toImage"],
             "displaylogo": False,
+            "theme": "plotly_dark",
         },
     )
     return html_output
+
+
+"""
+Plotly theming config.
+  Default template: 'plotly'
+    Available templates:
+        ['ggplot2', 'seaborn', 'simple_white', 'plotly',
+         'plotly_white', 'plotly_dark', 'presentation', 'xgridoff',
+         'ygridoff', 'gridon', 'none']
+"""

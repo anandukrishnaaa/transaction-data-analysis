@@ -10,8 +10,17 @@
     <h1 class="subheading"></h1>
     <p>Data analysis result for uploaded file.</p>
     {{ report_id }}
-    <a href="{% url 'get_report_pdf' report_id=report_id %}"
-       class="btn btn-primary">Show/Download as PDF</a>
+    <button id="downloadPdfButton"
+            class="btn btn-primary"
+            data-file-id="{{ report_id }}">
+        Download PDF <i class="fa-regular fa-file-pdf"></i>
+    </button>
+    <a href="{% url 'get_ml' report_id=report_id %}">
+        <button>Run ML Model</button>
+    </a>
+    <a href="{% url 'get_ml' report_id=report_id %}">
+        <button>Train ML Model</button>
+    </a>
     <section id="charts" class="charts">
         <div class="container-fluid mt-3 pt-5">
             <div class="row">

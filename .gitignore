@@ -9,3 +9,4 @@ migrations
 **/media/uploads
 .vscode
 .venv
+**/*.csv

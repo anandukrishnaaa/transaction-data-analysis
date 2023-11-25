@@ -6,8 +6,10 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from .models import FileUpload, Report
 from .forms import UploadFileForm, CustomUserCreationForm
-from .utils import file_handler
+from .utils import file_handler, ml
 import pickle
+
+import pandas as pd
 
 
 from .utils.logger_config import set_logger
@@ -131,8 +133,29 @@ def get_report(request, report_id):
     )
 
 
-def get_report_pdf(request, report_id):
-    pass
+def get_ml(request, report_id):
+    # Get the Report object based on the report_id
+    report = get_object_or_404(Report, id=report_id)
+
+    # Get the file path from the Report object
+    file_path = report.file_id.file_path.path
+
+    ml.train_models(file_path)
+
+    # Make predictions using the Random Forest model
+    rf_prediction = ml.predict_rf(file_path)
+
+    # Make predictions using the Logistic Regression model
+    lr_prediction = ml.predict_lr(file_path)
+
+    # Prepare data to display in the template
+    context = {
+        "rf_prediction": rf_prediction,
+        "lr_prediction": lr_prediction,
+    }
+
+    # Render the ml.html template with the prepared data
+    return render(request, "ml.html", context)
 
 
 def logout_view(request):
