@@ -10,6 +10,8 @@ Custom filter `to_div_html` used to render charts and plots in `div` tag, overri
 
 @register.filter
 def to_div_html(figure):
+    # Apply the theme to the figure
+    figure.update_layout(template="plotly_dark")
     # Modify other parameters or perform additional operations
     html_output = pio.to_html(
         figure,

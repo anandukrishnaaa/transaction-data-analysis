@@ -53,8 +53,10 @@
                     <li><a  href="{% url 'logout' %}">Logout</a></li>
                     <li><i class='bx bxs-moon' id="darkMode-icon"></i></li>
                     {% else %}
-                    <!-- <li><a href="{% url 'login' %}">Login</a></li>
-                    <li><a href="{% url 'register' %}">Register</a></li> -->
+                    <li><a href="{% url 'login' %}"><i class='bx bxs-user' style="font-size: 2rem;"></i></a></li>
+                    <!-- <li><a href="{% url 'register' %}">Register</a></li> -->
+                    <li><i class='bx bxs-moon' id="darkMode-icon"></i></li>
+
                     {% endif %}
                     <li class="icon" style="display: none;"><i class="fa-solid fa-xmark"></i></li>
                     <li class="icon" style="display: none;"><i class="fa-solid fa-bars"></i></li>

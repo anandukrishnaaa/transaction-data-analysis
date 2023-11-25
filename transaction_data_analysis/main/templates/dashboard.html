@@ -7,35 +7,54 @@
     Dashboard
 {% endblock title %}
 {% block content %}
-    <h1 class="subheading"></h1>
-    <p>Data analysis result for uploaded file.</p>
-    {{ report_id }}
+<div class="dashboardBox mt-5">
+    <h2>Here You go {{ user.first_name }}!</h2>
+    <p class="text-justify p-4">The data analysed report based on your file. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Perferendis corrupti eligendi eum? Dolor commodi facilis dolores, inventore doloremque rem nesciunt illo dolorum autem facere non dolorem molestiae, esse, libero architecto. Lorem ipsum dolor sit, amet consectetur adipisicing elit. Quis quidem autem eum minima expedita at, exercitationem, enim vero mollitia distinctio consequuntur. Ut beatae quod earum nihil delectus pariatur accusamus est.</p>
+    <p class="pt-3">{{ user.first_name }} Your Report id is {{ report_id }}</p>
+    
     <a href="{% url 'get_report_pdf' report_id=report_id %}"
-       class="btn btn-primary">Show/Download as PDF</a>
+       class="btn download">Show/Download as PDF</a>
     <section id="charts" class="charts">
-        <div class="container-fluid mt-3 pt-5">
             <div class="row">
-                <div class="col-md-4 box-data">{{ analysis_result.univariate_analysis.transaction_plot|to_div_html | safe }}</div>
                 <div class="col-md-4 box-data">
+                    <h3 class="text-center">type transaction</h3>
+                    {{ analysis_result.univariate_analysis.transaction_plot|to_div_html | safe }}
+                </div>
+                <div class="col-md-4 box-data">
+                    <h3 class="text-center">Count plot of transaction</h3>
                     {{ analysis_result.univariate_analysis.transaction_distribution_plot|to_div_html | safe }}
                 </div>
                 <div class="col-md-4 box-data">
+                    <h3 class="text-center">isFraud transaction</h3>
                     {{ analysis_result.univariate_analysis.non_fraud_vs_fraud_plot|to_div_html | safe }}
                 </div>
                 <div class="col-md-4 box-data">
+                    <h3 class="text-center">transaction type</h3>
                     {{ analysis_result.bivariate_analysis.transaction_type_plot_1|to_div_html | safe }}
                 </div>
                 <div class="col-md-4 box-data">
+                    <h3 class="text-center">transaction type in percentage</h3>
                     {{ analysis_result.bivariate_analysis.transaction_type_plot_2|to_div_html | safe }}
                 </div>
-                <div class="col-md-4 box-data">{{ analysis_result.bivariate_analysis.fraud_amount_plot|to_div_html | safe }}</div>
-                <div class="col-md-4 box-data">{{ analysis_result.bivariate_analysis.top_fraud_plot|to_div_html | safe }}</div>
                 <div class="col-md-4 box-data">
+                    <h3 class="text-center">amount quantity</h3>
+                    {{ analysis_result.bivariate_analysis.fraud_amount_plot|to_div_html | safe }}
+                </div>
+                <div class="col-md-4 box-data">
+                    <h3 class="text-center">Steps leads to fraudule</h3>
+                    {{ analysis_result.bivariate_analysis.top_fraud_plot|to_div_html | safe }}
+                </div>
+                <div class="col-md-4 box-data">
+                    <h3 class="text-center">initial cutomer pre-transaction</h3>
                     {{ analysis_result.bivariate_analysis.pre_balance_transaction_plot|to_div_html | safe }}
                 </div>
-                <div class="col-md-4 box-data">{{ analysis_result.multivariate_analysis.corr_matrix_plot|to_div_html | safe }}</div>
+                <div class="col-md-4 box-data">
+                    <h3 class="text-center pb-auto">correlation heatmap</h3>
+                    {{ analysis_result.multivariate_analysis.corr_matrix_plot|to_div_html | safe }}
+                </div>
             </div>
-        </div>
+
     </section>
+</div>
     {% comment  %} The `|to_div_html | safe` custom filter is used to circumvent the limitation attribute `full_html=True` being set by default in the plotly to_html method. When `full_html=True` is used, the stupid plotly library renders every single plot as an *entire html page*. This helps prevent that.  {% endcomment %}
 {% endblock content %}

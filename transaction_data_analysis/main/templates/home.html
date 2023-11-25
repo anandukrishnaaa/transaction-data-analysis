@@ -9,14 +9,17 @@ Home
 <!-- <div class="col-md-8 d-flex align-items-center" style="height: 350px; ">
     <h1 class="mt-5">Welcome home!<br>{{ user.first_name }}</h1>
 </div> -->
-<div class="welcome-section content-hidden">
-    <div class="content-wrap ">
-        <ul class="fly-in-text text-center">
-            <li>Welcome</li>
-            <li>{{ user.first_name }}</li>
-        </ul>
+
+    <div class="welcome-section content-hidden">
+        <div class="content-wrap ">
+            <ul class="fly-in-text text-center">
+                <li>Welcome</li>
+                <li>{{ user.first_name }}</li>
+            </ul>
+        </div>
     </div>
-</div>
+
+
 
 
 
@@ -37,6 +40,6 @@ Home
         //     e.preventDefault();
         //     welcomeSection.addClass('content-hidden').fadeOut();
         // });
-    })();
+    });
 </script>
 {% endblock content %}
