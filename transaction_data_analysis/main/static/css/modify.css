@@ -97,7 +97,9 @@ span{
 /* navbar dark and light mode */
 .navlinks li i.fa-solid{
     font-size: 30px;
-    color: bg;
+}
+#darkMode-icon{
+    font-size: 2rem;
 }
 .btn{
     background-color: var(--bg-main);
