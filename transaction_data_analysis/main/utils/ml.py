@@ -1,9 +1,6 @@
+# ----------------------
 # Online Payments Fraud Detection Model using features
 path = r"C:\Users\AK\Projects\code\coding-projects\transaction-data-analysis\dataset\sample.csv"
-
-
-# ----------------------
-
 
 # Basic libraries
 import pandas as pd
@@ -35,11 +32,17 @@ from sklearn import metrics
 from sklearn.metrics import classification_report
 from sklearn.model_selection import cross_val_score
 
-
 # Misc libraries
 import warnings
 
 warnings.filterwarnings("ignore")
+
+# Model Training
+
+BEST_MODEL_PATH = "models/nbModel_grid.pkl"
+SCALER_PATH = "models/scaler.pkl"
+VECTORIZER_DEST_PATH = "models/vectorizer_dest.pkl"
+VECTORIZER_ORG_PATH = "models/vectorizer_org.pkl"
 
 """
 Feature engineering: 
@@ -207,7 +210,7 @@ features_train = X_train[col_names]
 features_test = X_test[col_names]
 scaler = StandardScaler().fit(features_train.values)
 # Save the instances to files
-joblib.dump(scaler, "models/scaler.pkl")
+joblib.dump(scaler, SCALER_PATH)
 
 features_train = scaler.transform(features_train.values)
 features_test = scaler.transform(features_test.values)
@@ -234,8 +237,8 @@ customers_test_org = vectorizer_org.transform(X_test["nameOrig"])
 customers_test_dest = vectorizer_dest.transform(X_test["nameDest"])
 
 # Save the instances to files
-joblib.dump(vectorizer_org, "models/vectorizer_org.pkl")
-joblib.dump(vectorizer_dest, "models/vectorizer_dest.pkl")
+joblib.dump(vectorizer_org, VECTORIZER_ORG_PATH)
+joblib.dump(vectorizer_dest, VECTORIZER_DEST_PATH)
 
 # Reset the index of X_train and X_test
 X_train.reset_index(drop=True, inplace=True)
@@ -303,6 +306,9 @@ nbModel_grid = GridSearchCV(
     estimator=GaussianNB(), param_grid=param_grid_nb, verbose=1, cv=10, n_jobs=-1
 )
 nbModel_grid.fit(X_train, y_train)
+# Save the model after fitting the test data
+joblib.dump(nbModel_grid, BEST_MODEL_PATH)
+
 # print(nbModel_grid.best_estimator_) // TODO: for out
 
 """
@@ -361,54 +367,24 @@ The model has identified false positives but never let even a single false negat
 When we found that our false negatives are more important than false positives, we have to look at the recall number and we have 100% recall in finding the fraud transactions and 100% precision in finding the non fraud tranactions and on an average our model performs more than 70% accurate which is pretty good and there are possible chance to improve the performance of this model.
 """
 
-#  Use models
+#  Putting the model to use
 
 # Load the instances from files
-# scaler = joblib.load("models/scaler.pkl")
-# vectorizer_org = joblib.load("models/vectorizer_org.pkl")
-# vectorizer_dest = joblib.load("models/vectorizer_dest.pkl")
-# nbModel_grid = joblib.load("model/nbModel_grid.pkl")
+# scaler = joblib.load(SCALER_PATH)
+# vectorizer_org = joblib.load(VECTORIZER_ORG_PATH)
+# vectorizer_dest = joblib.load(VECTORIZER_DEST_PATH)
+nbModel_grid = joblib.load(BEST_MODEL_PATH)
 
 
-# Split data into test and training sets
-from sklearn.model_selection import train_test_split
-import pandas as pd
-import numpy as np
-
-path = r"C:\Users\AK\Projects\code\coding-projects\transaction-data-analysis\dataset\sample.csv"
-df = pd.read_csv(path)
-
-# Data preprocess
-df["type"] = df["type"].map(
-    {"CASH_OUT": 1, "PAYMENT": 2, "CASH_IN": 3, "TRANSFER": 4, "DEBIT": 5}
-)
-df["isFraud"] = df["isFraud"].map({0: "No Fraud", 1: "Fraud"})
-
-x = np.array(df[["type", "amount", "oldbalanceOrg", "newbalanceOrig"]])
-y = np.array(df["isFraud"])
-
-
-xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=0.10, random_state=42)
-model = nbModel_grid
-joblib.dump(model, "models/nbModel_grid.pkl")
-model.fit(xtrain, ytrain)
-print(model.score(xtest, ytest))
-
-
-import numpy as np
-import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.naive_bayes import GaussianNB
-
-path = r"C:\Users\AK\Projects\code\coding-projects\transaction-data-analysis\dataset\sample.csv"
-df = pd.read_csv(path)
-
-# Assuming df is your DataFrame
 # Data preprocessing
-df["type"] = df["type"].map(
-    {"CASH_OUT": 1, "PAYMENT": 2, "CASH_IN": 3, "TRANSFER": 4, "DEBIT": 5}
-)
-df["isFraud"] = df["isFraud"].map({0: "No Fraud", 1: "Fraud"})
+def prep_df(df):
+    # Assuming df is your DataFrame
+    df["type"] = df["type"].map(
+        {"CASH_OUT": 1, "PAYMENT": 2, "CASH_IN": 3, "TRANSFER": 4, "DEBIT": 5}
+    )
+    df["isFraud"] = df["isFraud"].map({0: "No Fraud", 1: "Fraud"})
+
+    return df
 
 
 # Function to train the model
@@ -418,7 +394,7 @@ def train_model(data):
     xtrain, xtest, ytrain, ytest = train_test_split(
         x, y, test_size=0.10, random_state=42
     )
-    model = GaussianNB()
+    model = nbModel_grid  # Use GaussianNB if the custom model breaks
     model.fit(xtrain, ytrain)
     return model, xtest, ytest
 
@@ -427,7 +403,7 @@ def train_model(data):
 def find_most_fraudulent_amount(data):
     fraud_data = data[data["isFraud"] == "Fraud"]
     most_fraudulent_amount = fraud_data["amount"].max()
-    return most_fraudulent_amount
+    return most_fraudulent_amount  # TODO: for out
 
 
 # Task 5: Get anomalies and patterns - find all other interesting anomalies, patterns, and their indications
@@ -438,7 +414,7 @@ def get_anomalies_and_patterns(data, model):
         )
         == "Fraud"
     ]
-    return anomalies
+    return anomalies  # TODO: for out
 
 
 # Task 6: Get anomalies and patterns for a customer - find all other interesting anomalies, patterns, and their indications for a single customer
@@ -452,7 +428,7 @@ def get_anomalies_and_patterns_for_customer(data, model, customer_id):
         )
         == "Fraud"
     ]
-    return anomalies
+    return anomalies  # TODO: for out
 
 
 # Task 7: Find out the probability % of a given customer (nameOrig) has_been_frauded, has_committed_fraud, victim_probability, perpetrator_probability
@@ -469,7 +445,7 @@ def get_customer_probabilities(model, data, customer_id):
         "has_committed_fraud": 1 - fraud_probability.mean(),
         "victim_probability": (model.predict(features) == "No Fraud").mean(),
         "perpetrator_probability": (model.predict(features) == "Fraud").mean(),
-    }
+    }  # TODO: for out
 
 
 # Task 8: Predict fraud-prone customers - find the top x (x can be any number, for example, 10) most fraud-prone customers
@@ -488,7 +464,7 @@ def predict_fraud_prone_customers(model, data, top_x):
         )
 
     fraud_probabilities.sort(key=lambda x: x["fraud_probability"], reverse=True)
-    return fraud_probabilities[:top_x]
+    return fraud_probabilities[:top_x]  # TODO: for out
 
 
 # Task 9: Compute fraud probabilities - compute the fraud probability of each unique customer in the dataset
@@ -506,29 +482,45 @@ def compute_fraud_probabilities(model, data):
             {"customer_id": customer_id, "fraud_probability": fraud_probability}
         )
 
-    return fraud_probabilities
+    return fraud_probabilities  # TODO: for out
+
+
+df = pd.read_csv(
+    r"C:\Users\AK\Projects\code\coding-projects\transaction-data-analysis\dataset\sample.csv"
+)
+
+# Data preprocessing
+df = prep_df(df)  # TODO: for view
 
 
 # Assuming df is your DataFrame
-model, xtest, ytest = train_model(df)
+model, xtest, ytest = train_model(df)  # TODO: for view
+
+print(model)
 
 # Example usage of tasks
 customer_id = "C1231006815"
-print(get_customer_probabilities(model, df, customer_id))
+customer_probabilities = get_customer_probabilities(
+    model, df, customer_id
+)  # TODO: for view
+print(customer_probabilities)  # TODO: for view
 
-top_fraud_prone_customers = predict_fraud_prone_customers(model, df, top_x=10)
-print(top_fraud_prone_customers)
+top_fraud_prone_customers = predict_fraud_prone_customers(
+    model, df, top_x=10
+)  # TODO: for view
 
-fraud_probabilities = compute_fraud_probabilities(model, df)
+print(top_fraud_prone_customers)  # TODO: for view
+
+fraud_probabilities = compute_fraud_probabilities(model, df)  # TODO: for view
 print(fraud_probabilities)
 
-most_fraudulent_amount = find_most_fraudulent_amount(df)
+most_fraudulent_amount = find_most_fraudulent_amount(df)  # TODO: for view
 print(most_fraudulent_amount)
 
-anomalies_and_patterns = get_anomalies_and_patterns(df, model)
+anomalies_and_patterns = get_anomalies_and_patterns(df, model)  # TODO: for view
 print(anomalies_and_patterns)
 
 anomalies_and_patterns_for_customer = get_anomalies_and_patterns_for_customer(
     df, model, customer_id
-)
+)  # TODO: for view
 print(anomalies_and_patterns_for_customer)
