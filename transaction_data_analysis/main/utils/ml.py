@@ -69,7 +69,7 @@ def train_main_model(file_path):
             - Merchant indicator: The customer ids in receiver starts with 'M' which means that they are merchants and they obviously will have a lot of receiving transactions. So we also flag whenever there is a merchant receiver
     """
     # Load dataset
-    paysim = pd.read_csv(path)
+    paysim = pd.read_csv(file_path)
 
     # Tallying the balance
     def balance_diff(data):
