@@ -1,7 +1,3 @@
-# ----------------------
-# Online Payments Fraud Detection Model using features
-path = r"C:\Users\AK\Projects\code\coding-projects\transaction-data-analysis\dataset\sample.csv"
-
 # Basic libraries
 import pandas as pd
 import numpy as np

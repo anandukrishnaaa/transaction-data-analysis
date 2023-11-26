@@ -27,7 +27,7 @@ def register(request):
         register_form = CustomUserCreationForm()
 
     template_name = "register.html"
-    context = {"register_form": register_form}
+    context = {"register_form": ic(register_form)}
     return render(request, template_name, context)
 
 
@@ -41,7 +41,7 @@ def login_view(request):
     else:
         login_form = AuthenticationForm()
     template_name = "login.html"
-    context = {"login_form": login_form}
+    context = {"login_form": ic(login_form)}
     return render(request, template_name, context)
 
 
@@ -55,16 +55,19 @@ def upload_file(request):
             file_uploaded = FileUpload.objects.create(
                 user=request.user, file_id=uploaded_file.name, file_path=uploaded_file
             )
-            uploaded_file_details = {"file_id": file_uploaded.id, "file_size": size}
+            uploaded_file_details = {
+                "file_id": ic(file_uploaded.id),
+                "file_size": ic(size),
+            }
             context = {
-                "uploaded_file_details": uploaded_file_details,
-                "user_reports": Report.objects.filter(user=request.user),
+                "uploaded_file_details": ic(uploaded_file_details),
+                "user_reports": ic(Report.objects.filter(user=request.user)),
             }
 
-            template = "upload.html"
+            template_name = "upload.html"
             return render(
                 request,
-                template,
+                template_name,
                 context,
             )
     else:
@@ -72,14 +75,16 @@ def upload_file(request):
         # Fetch reports associated with current user
         user_reports = Report.objects.filter(user=request.user)
         context = {
-            "file_upload_form": file_upload_form,
+            "file_upload_form": ic(file_upload_form),
             "uploaded_file_details": None,
-            "user_reports": user_reports,
+            "user_reports": ic(user_reports),
         }
+        template_name = "upload.html"
+
         return render(
             request,
-            "upload.html",
-            context=context,
+            template_name,
+            context,
         )
 
 
@@ -93,20 +98,23 @@ def dashboard(request, file_id):
     bivariate_analysis = da.bivariate_data_visualization()
     multivariate_analysis = da.multivariate_data_visualization()
     analysis_result = {
-        "exploratory_analysis": exploratory_analysis,
-        "univariate_analysis": univariate_analysis,
-        "bivariate_analysis": bivariate_analysis,
-        "multivariate_analysis": multivariate_analysis,
+        "exploratory_analysis": ic(exploratory_analysis),
+        "univariate_analysis": ic(univariate_analysis),
+        "bivariate_analysis": ic(bivariate_analysis),
+        "multivariate_analysis": ic(multivariate_analysis),
     }
     # Store Report
-    report = Report.objects.create(
-        user=request.user, file_id=file_upload, report=pickle.dumps(analysis_result)
+    report = ic(
+        Report.objects.create(
+            user=request.user, file_id=file_upload, report=pickle.dumps(analysis_result)
+        )
     )
     ic(f"Report for uploaded file create at {report.id}")
-    context = {"report_id": report.id, "analysis_result": analysis_result}
+    context = {"report_id": ic(report.id), "analysis_result": ic(analysis_result)}
+    template_name = "dashboard.html"
     return render(
         request,
-        "dashboard.html",
+        template_name,
         context=context,
     )
 
@@ -121,16 +129,17 @@ def get_report(request, report_id):
         "bivariate_analysis": ic(report_dict.get("bivariate_analysis")),
         "multivariate_analysis": ic(report_dict.get("multivariate_analysis")),
     }
-    print(report.id)
     context = {"report_id": report.id, "analysis_result": analysis_result}
+    template_name = "dashboard.html"
 
     return render(
         request,
-        "dashboard.html",
+        template_name,
         context=context,
     )
 
 
+@login_required
 def train_main_model(request, report_id):
     # Get the Report object based on the report_id
     report = get_object_or_404(Report, id=report_id)
@@ -138,14 +147,15 @@ def train_main_model(request, report_id):
     # Get the file path from the Report object
     file_path = report.file_id.file_path.path
 
-    train_main_model_result = ml.train_main_model(file_path)
+    train_main_model_result = ic(ml.train_main_model(file_path))
     # Prepare data to display in the template
     context = {"train_main_model_result": train_main_model_result}
-
+    template_name = "ml.html"
     # Render the ml.html template with the prepared data
-    return render(request, "ml.html", context)
+    return render(request, template_name, context)
 
 
+@login_required
 def batch_run_model(request, report_id):
     # Get the Report object based on the report_id
     report = get_object_or_404(Report, id=report_id)
@@ -185,10 +195,12 @@ def batch_run_model(request, report_id):
     # Prepare data to display in the template
     context = {"batch_run_model_result": batch_run_model_result}
 
+    template_name = "ml.html"
     # Render the ml.html template with the prepared data
-    return render(request, "ml.html", context)
+    return render(request, template_name, context)
 
 
+@login_required
 def single_run_model(request, report_id):
     # Get the Report object based on the report_id
     report = get_object_or_404(Report, id=report_id)
@@ -210,17 +222,18 @@ def single_run_model(request, report_id):
     customer_probabilities = ml.get_customer_probabilities(model, df, customer_id)
 
     single_run_model_result = {
-        "report_id": report_id,
-        "customer_id": customer_id,
-        "anomalies_and_patterns_for_customer": anomalies_and_patterns_for_customer,
-        "customer_probabilities": customer_probabilities,
+        "report_id": ic(report_id),
+        "customer_id": ic(customer_id),
+        "anomalies_and_patterns_for_customer": ic(anomalies_and_patterns_for_customer),
+        "customer_probabilities": ic(customer_probabilities),
     }
 
     # Prepare data to display in the template
     context = {"single_run_model_result": single_run_model_result}
+    template_name = "ml.html"
 
     # Render the ml.html template with the prepared data
-    return render(request, "ml.html", context)
+    return render(request, template_name, context)
 
 
 def logout_view(request):
