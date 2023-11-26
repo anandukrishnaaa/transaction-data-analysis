@@ -15,6 +15,8 @@ plotly = "*"
 seaborn = "*"
 matplotlib = "*"
 icecream = "*"
+imblearn = "*"
+keras = "*"
 
 [dev-packages]
 

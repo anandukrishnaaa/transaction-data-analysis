@@ -364,9 +364,10 @@ When we found that our false negatives are more important than false positives, 
 #  Use models
 
 # Load the instances from files
-scaler = joblib.load("models/scaler.pkl")
-vectorizer_org = joblib.load("models/vectorizer_org.pkl")
-vectorizer_dest = joblib.load("models/vectorizer_dest.pkl")
+# scaler = joblib.load("models/scaler.pkl")
+# vectorizer_org = joblib.load("models/vectorizer_org.pkl")
+# vectorizer_dest = joblib.load("models/vectorizer_dest.pkl")
+# nbModel_grid = joblib.load("model/nbModel_grid.pkl")
 
 
 # Split data into test and training sets
@@ -389,6 +390,7 @@ y = np.array(df["isFraud"])
 
 xtrain, xtest, ytrain, ytest = train_test_split(x, y, test_size=0.10, random_state=42)
 model = nbModel_grid
+joblib.dump(model, "models/nbModel_grid.pkl")
 model.fit(xtrain, ytrain)
 print(model.score(xtest, ytest))
 
