@@ -1,12 +1,159 @@
 <!-- dashboard.html -->
 {% extends "base.html" %}
 {% load django_bootstrap5 %}
+{% load custom_filters %}
 {% load static %}
 {% block title %}
     ML Dashboard
 {% endblock title %}
 {% block content %}
-    <h1>Machine Learning Results</h1>
-    <p>Random Forest Prediction: {{ rf_prediction }}</p>
-    <p>Logistic Regression Prediction: {{ lr_prediction }}</p>
+    {% if  train_main_model_result %}
+        Feature engineering result
+        <pre>{{ train_main_model_result.orig_diff_count }}</pre>
+        <pre>{{ train_main_model_result.dest_diff_count }}</pre>
+        <pre>{{ train_main_model_result.surge_count }}</pre>
+        <pre>{{ train_main_model_result.freq_dest }} </pre>
+        {{ train_main_model_result.data_head | safe }}
+        {% if train_main_model_result %}
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Model</th>
+                        <th>Mean Accuracy</th>
+                        <th>Standard Deviation</th>
+                        <th>Accuracy Scores</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for model, metrics in train_main_model_result.algo_compare_results.items %}
+                        <tr>
+                            <td>{{ model }}</td>
+                            <td>{{ metrics.mean_accuracy }}</td>
+                            <td>{{ metrics.standard_deviation }}</td>
+                            <td>
+                                [
+                                {% for score in metrics.accuracy_scores %}
+                                    {{ score }}
+                                    {% if not forloop.last %},{% endif %}
+                                {% endfor %}
+                                ]
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        Hyperparameter Tuning: Grid estimator : <pre>{{ train_main_model_result.nbModel_grid_estimate }}</pre>
+        <pre>{{ train_main_model_result.classification_report_result}}  </pre>
+        {{ train_main_model_result.balance_target_plot|to_div_html | safe }}
+        {{ train_main_model_result.check_balance_target_plot|to_div_html | safe }}
+        {{ train_main_model_result.confusion_matrix_plot|to_div_html | safe }}
+    {% endif %}
+    {% if batch_run_model_result %}
+        {% if batch_run_model_result.customer_ids_list %}
+            <form method="post"
+                  action="{% url 'single_run_model' batch_run_model_result.report_id %}">
+                {% csrf_token %}
+                <label for="nameOrig">Select a Customer:</label>
+                <select id="nameOrig" name="nameOrig">
+                    {% for customer_id in batch_run_model_result.customer_ids_list %}
+                        <option value="{{ customer_id }}">{{ customer_id }}</option>
+                    {% endfor %}
+                </select>
+                <input type="submit" value="Submit">
+            </form>
+        {% endif %}
+        <b>Most frauded amount</b> {{ batch_run_model_result.most_fraudulent }}
+        {% if batch_run_model_result.predict_fraud_prone_customers %}
+            <b>Most prone to fraud</b>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Customer ID</th>
+                        <th>Fraud Prone Probability</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in batch_run_model_result.predict_fraud_prone_customers %}
+                        <tr>
+                            <td>{{ entry.customer_id }}</td>
+                            <td>{{ entry.fraud_probability|stringformat:".2f" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {% if batch_run_model_result.predict_least_fraud_prone_customers %}
+            <b>Least prone to fraud</b>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Customer ID</th>
+                        <th>Fraud Prone Probability</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in batch_run_model_result.predict_least_fraud_prone_customers %}
+                        <tr>
+                            <td>{{ entry.customer_id }}</td>
+                            <td>{{ entry.fraud_probability|stringformat:".2f" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+        {% if batch_run_model_result.compute_fraud_probabilities %}
+            <b>All customers in dataset fraud prone probability</b>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Customer ID</th>
+                        <th>Fraud Prone Probability</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in batch_run_model_result.compute_fraud_probabilities %}
+                        <tr>
+                            <td>{{ entry.customer_id }}</td>
+                            <td>{{ entry.fraud_probability|stringformat:".2f" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    {% endif %}
+    {% if single_run_model_result %}
+        <b>Report id:</b>{{ single_run_model_result.report_id }}
+        <b>Customer id: </b>{{ single_run_model_result.customer_id }}
+        <b>Anomalies and patterns</b>{{ single_run_model_result.anomalies_and_patterns_for_customer| safe }}
+        <b>Probabilities</b>
+        {% if single_run_model_result.customer_probabilities %}
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Probability</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Has Been Defrauded</td>
+                        <td>{{ single_run_model_result.customer_probabilities.has_been_frauded|stringformat:".10f" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Has Committed Fraud</td>
+                        <td>{{ single_run_model_result.customer_probabilities.has_committed_fraud|stringformat:".10f" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Victim Probability</td>
+                        <td>{{ single_run_model_result.customer_probabilities.victim_probability|stringformat:".10f" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Perpetrator Probability</td>
+                        <td>{{ single_run_model_result.customer_probabilities.perpetrator_probability|stringformat:".10f" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        {% endif %}
+    {% endif %}
 {% endblock content %}

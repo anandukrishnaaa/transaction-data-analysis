@@ -15,10 +15,10 @@
             data-file-id="{{ report_id }}">
         Download PDF <i class="fa-regular fa-file-pdf"></i>
     </button>
-    <a href="{% url 'get_ml' report_id=report_id %}">
+    <a href="{% url 'batch_run_model' report_id=report_id %}">
         <button>Run ML Model</button>
     </a>
-    <a href="{% url 'get_ml' report_id=report_id %}">
+    <a href="{% url 'train_main_model' report_id=report_id %}">
         <button>Train ML Model</button>
     </a>
     <section id="charts" class="charts">
