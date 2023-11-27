@@ -69,7 +69,7 @@ def train_main_model(file_path):
             - Merchant indicator: The customer ids in receiver starts with 'M' which means that they are merchants and they obviously will have a lot of receiving transactions. So we also flag whenever there is a merchant receiver
     """
     # Load dataset
-    paysim = pd.read_csv(path)
+    paysim = pd.read_csv(file_path)
 
     # Tallying the balance
     def balance_diff(data):
@@ -526,9 +526,13 @@ def predict_least_fraud_prone_customers(model, df, bottom_x):
 
 
 # Compute fraud probabilities - compute the fraud probability of each unique customer in the dataset
-def compute_fraud_probabilities(model, df):
+def compute_fraud_probabilities(model, df, x=None):
     all_customers = df["nameOrig"].unique()
     fraud_probabilities = []
+
+    # Limit the number of customer records to fetch
+    if x is not None:
+        all_customers = all_customers[:x]
 
     for customer_id in all_customers:
         customer_data = df[df["nameOrig"] == customer_id]
@@ -546,14 +550,30 @@ def compute_fraud_probabilities(model, df):
 # Get anomalies and patterns for a customer - find all other interesting anomalies, patterns, and their indications for a single customer
 def get_anomalies_and_patterns_for_customer(df, model, customer_id):
     customer_data = df[df["nameOrig"] == customer_id]
-    anomalies = customer_data[
+    customer_data.drop(["isFraud", "isFlaggedFraud"], axis=1, inplace=True)
+    # Check if the condition is met
+    if (
         model.predict(
             np.array(
                 customer_data[["type", "amount", "oldbalanceOrg", "newbalanceOrig"]]
             )
         )
         == "Fraud"
-    ]
+    ).any():
+        anomalies = customer_data[
+            model.predict(
+                np.array(
+                    customer_data[["type", "amount", "oldbalanceOrg", "newbalanceOrig"]]
+                )
+            )
+            == "Fraud"
+        ]
+    else:
+        # If no fraud detected, create a DataFrame with all columns as "-" for the first row
+        columns = customer_data.columns
+        data = {col: ["-"] * len(columns) for col in columns}
+        anomalies = pd.DataFrame(data).head(1)
+
     return anomalies  # TODO: for out
 
 
@@ -572,3 +592,9 @@ def get_customer_probabilities(model, df, customer_id):
         "victim_probability": (model.predict(features) == "No Fraud").mean(),
         "perpetrator_probability": (model.predict(features) == "Fraud").mean(),
     }  # TODO: for out
+
+
+def get_frauds(df):
+    fraud_data = df[df["isFraud"] == "Fraud"]
+    fraud_customers = fraud_data["nameOrig"].unique().tolist()
+    return fraud_customers

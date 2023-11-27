@@ -182,7 +182,11 @@ def batch_run_model(request, report_id):
         model, df, bottom_x
     )
     # Probability of being frauded
-    compute_fraud_probabilities = ml.compute_fraud_probabilities(model, df)
+    x = 50
+    compute_fraud_probabilities = ml.compute_fraud_probabilities(model, df, x)
+
+    # All frauds
+    all_frauds = ml.get_frauds(df)
 
     batch_run_model_result = {
         "report_id": ic(report_id),
@@ -191,6 +195,7 @@ def batch_run_model(request, report_id):
         "predict_fraud_prone_customers": ic(predict_fraud_prone_customers),
         "predict_least_fraud_prone_customers": ic(predict_least_fraud_prone_customers),
         "compute_fraud_probabilities": ic(compute_fraud_probabilities),
+        "all_frauds": ic(all_frauds),
     }
     # Prepare data to display in the template
     context = {"batch_run_model_result": batch_run_model_result}

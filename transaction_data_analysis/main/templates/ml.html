@@ -103,7 +103,7 @@
             </table>
         {% endif %}
         {% if batch_run_model_result.compute_fraud_probabilities %}
-            <b>All customers in dataset fraud prone probability</b>
+            <b>First 50 customers in dataset fraud prone probability</b>
             <table class="table table-bordered">
                 <thead>
                     <tr>
@@ -120,6 +120,22 @@
                     {% endfor %}
                 </tbody>
             </table>
+            {% if batch_run_model_result.all_frauds %}
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Confirmed frauds</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for customer_id in batch_run_model_result.all_frauds %}
+                            <tr>
+                                <td>{{ customer_id }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
         {% endif %}
     {% endif %}
     {% if single_run_model_result %}
