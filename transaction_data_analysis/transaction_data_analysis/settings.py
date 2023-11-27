@@ -14,6 +14,10 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
 import os
+from main.utils.logger_config import set_logger
+
+#Initialise custom logger object
+ic = set_logger(print_to_console=False)
 
 load_dotenv()
 
@@ -152,6 +156,12 @@ LOGOUT_REDIRECT_URL = "/"
 TRANSACTION_DATA_ANALYSIS_PATH = BASE_DIR / "logs/transaction_data_analysis.log"
 MAIN_LOG_FILE_PATH = BASE_DIR / "main/logs/main.log"
 
+# Check and create directories if they don't exist
+for log_path in [TRANSACTION_DATA_ANALYSIS_PATH, MAIN_LOG_FILE_PATH]:
+    directory = log_path.parent
+    if not directory.is_dir():
+        directory.mkdir(parents=True, exist_ok=True)
+        ic("Parent directories for .log files not found, creating manually.")
 
 LOGGING = {
     "version": 1,
