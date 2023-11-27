@@ -24,25 +24,84 @@
     <section id="charts" class="charts">
         <div class="container-fluid mt-3 pt-5">
             <div class="row">
-                <div class="col-md-4 box-data">{{ analysis_result.univariate_analysis.transaction_plot|to_div_html | safe }}</div>
-                <div class="col-md-4 box-data">
-                    {{ analysis_result.univariate_analysis.transaction_distribution_plot|to_div_html | safe }}
+                <h2>Exploratory analysis result</h2>
+                <div>
+                    <pre>{{ analysis_result.exploratory_analysis.info | safe }}</pre>
                 </div>
-                <div class="col-md-4 box-data">
-                    {{ analysis_result.univariate_analysis.non_fraud_vs_fraud_plot|to_div_html | safe }}
+                <div>
+                    {% if analysis_result.exploratory_analysis.min_max_cols %}
+                        <table class="table">
+                            <tr>
+                                <th>Column</th>
+                                <th>Minimum Value</th>
+                                <th>Maximum Value</th>
+                            </tr>
+                            {% for values in analysis_result.exploratory_analysis.min_max_cols %}
+                                <tr>
+                                    <td>{{ values.column }}</td>
+                                    <td>{{ values.min_value }}</td>
+                                    <td>{{ values.max_value }}</td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    {% endif %}
                 </div>
-                <div class="col-md-4 box-data">
-                    {{ analysis_result.bivariate_analysis.transaction_type_plot_1|to_div_html | safe }}
+                <div>
+                    {% if analysis_result.exploratory_analysis.duplicate_check %}
+                        <b>Duplicate count:</b> {{ analysis_result.exploratory_analysis.duplicate_check }}
+                    {% endif %}
                 </div>
-                <div class="col-md-4 box-data">
-                    {{ analysis_result.bivariate_analysis.transaction_type_plot_2|to_div_html | safe }}
-                </div>
-                <div class="col-md-4 box-data">{{ analysis_result.bivariate_analysis.fraud_amount_plot|to_div_html | safe }}</div>
-                <div class="col-md-4 box-data">{{ analysis_result.bivariate_analysis.top_fraud_plot|to_div_html | safe }}</div>
-                <div class="col-md-4 box-data">
-                    {{ analysis_result.bivariate_analysis.pre_balance_transaction_plot|to_div_html | safe }}
-                </div>
-                <div class="col-md-4 box-data">{{ analysis_result.multivariate_analysis.corr_matrix_plot|to_div_html | safe }}</div>
+            </div>
+            <div class="row">
+                <h2>Univariate analysis result</h2>
+                {% if not analysis_result.univariate_analysis.step_count.empty %}
+                    <div>
+                        <b>Total no. of records</b>
+                        <pre>{{ analysis_result.univariate_analysis.step_count |safe }}</pre>
+                    </div>
+                {% endif %}
+                {% if analysis_result.univariate_analysis.customer_count %}
+                    <div>
+                        <b>Total customer count in dataset:</b> {{ analysis_result.univariate_analysis.customer_count }}
+                    </div>
+                {% endif %}
+                {% if analysis_result.univariate_analysis.transaction_plot %}
+                    <div class="col-md-4 box-data">{{ analysis_result.univariate_analysis.transaction_plot|to_div_html | safe }}</div>
+                {% endif %}
+                {% if analysis_result.univariate_analysis.transaction_distribution_plot %}
+                    <div class="col-md-4 box-data">
+                        {{ analysis_result.univariate_analysis.transaction_distribution_plot|to_div_html | safe }}
+                    </div>
+                {% endif %}
+                {% if analysis_result.univariate_analysis.non_fraud_vs_fraud_plot %}
+                    <div class="col-md-4 box-data">
+                        {{ analysis_result.univariate_analysis.non_fraud_vs_fraud_plot|to_div_html | safe }}
+                    </div>
+                {% endif %}
+                {% if analysis_result.bivariate_analysis.transaction_type_plot_1 %}
+                    <div class="col-md-4 box-data">
+                        {{ analysis_result.bivariate_analysis.transaction_type_plot_1|to_div_html | safe }}
+                    </div>
+                {% endif %}
+                {% if analysis_result.bivariate_analysis.transaction_type_plot_2 %}
+                    <div class="col-md-4 box-data">
+                        {{ analysis_result.bivariate_analysis.transaction_type_plot_2|to_div_html | safe }}
+                    </div>
+                {% endif %}
+                {% if analysis_result.bivariate_analysis.fraud_amount_plot %}
+                    <div class="col-md-4 box-data">{{ analysis_result.bivariate_analysis.fraud_amount_plot|to_div_html | safe }}</div>
+                {% endif %}
+                {% if analysis_result.bivariate_analysis.top_fraud_plot %}
+                    <div class="col-md-4 box-data">{{ analysis_result.bivariate_analysis.top_fraud_plot|to_div_html | safe }}</div>
+                {% endif %}
+                {% if analysis_result.bivariate_analysis.pre_balance_transaction_plot %}
+                    <div class="col-md-4 box-data">
+                        {{ analysis_result.bivariate_analysis.pre_balance_transaction_plot|to_div_html | safe }}
+                    </div>
+                {% endif %}
+                {% if analysis_result.multivariate_analysis.corr_matrix_plot %}
+                    <div class="col-md-4 box-data">{{ analysis_result.multivariate_analysis.corr_matrix_plot|to_div_html | safe }}</div>
+                {% endif %}
             </div>
         </div>
     </section>
