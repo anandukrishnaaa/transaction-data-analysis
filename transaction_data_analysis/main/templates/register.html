@@ -5,19 +5,26 @@
     Sign up
 {% endblock title %}
 {% block content %}
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6 pt-5">
-                <div class="card">
-                    <div class="card-body">
-                        <form method="post" class="form">
-                            {% csrf_token %}
-                            {% bootstrap_form register_form layout='floating' %}
-                            {% bootstrap_button button_type="submit" content="Sign up" %}
-                        </form>
-                    </div>
-                </div>
+<div class="registerFormBox">
+    <div class="regwrapper text-center">
+        <div class="regform-box reglogin text-center">
+            <h2>Registeration Form</h2>
+            <div class="input-box">
+                <form method="post" class="form">
+                    {% csrf_token %}
+                    {% bootstrap_form register_form layout='floating' %}
+                    {% bootstrap_button button_type="submit" content="Sign up" %}
+                </form>
+            </div>
+            <div class="logreg-link mt-3">
+                <!-- add registertaion from link below -->
+                <p>Alredy have an account? <a href="{% url 'login' %}" class="register-link"> Login</a></p>
             </div>
         </div>
+        <div class="info-text login">
+            <h2>Hello Buddy!</h2>
+            <p>“You are a good friend and we welcome you.”</p>
+        </div>
     </div>
+</div>
 {% endblock content %}

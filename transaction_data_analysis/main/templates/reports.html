@@ -14,14 +14,15 @@ Upload
     {% if user_reports %}
     <div class="reportsTableBox">
         <h3>Yours Reports</h3>
-        <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Inventore perspiciatis quibusdam beatae! Illum ea illo quae asperiores est unde, itaque commodi facilis, omnis tempora vero perspiciatis! Hic animi quam totam. Lorem ipsum dolor sit amet consectetur, adipisicing elit. Fuga blanditiis ipsam cupiditate animi illum possimus. Omnis perferendis iste distinctio dolor consequuntur voluptatem atque? Cupiditate voluptatum consectetur eveniet eos accusantium facere!</p>
+        <p class="text-justify">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Inventore perspiciatis quibusdam beatae! Illum ea illo quae asperiores est unde, itaque commodi facilis, omnis tempora vero perspiciatis! Hic animi quam totam. Lorem ipsum dolor sit amet consectetur, adipisicing elit. Fuga blanditiis ipsam cupiditate animi illum possimus. Omnis perferendis iste distinctio dolor consequuntur voluptatem atque? Cupiditate voluptatum consectetur eveniet eos accusantium facere!</p>
         <table class="reportsTable">
             <thead>
                 <tr>
+                    <td>serial number</td>
+                    <td>File Name</td>
                     <td>Report id</td>
                     <td>Date</td>
                     <td>Time</td>
-                    <td>File Name</td>
                     <td>Fraud level</td>
                     <td>Action</td>
                 </tr>
@@ -30,16 +31,22 @@ Upload
             <tbody>
                 <tr>
                     <!-- index number should be incremented -->
-                    <td>{{ report_id }}</td>
-                    <td>10/12/2025</td>
-                    <td>18:34</td>
+                    <td>{{ forloop.counter }}</td>
                     <td>{{ report.file_id.file_id }}</td>
+                    <td>{{ report_id }}</td>
+                    <td>20/12/2025</td>
+                    <td>18:34</td>
                     <td>80%</td>
                     <td><a href="{% url 'get_report' report_id=report.id %}" class="btn viewReport">VIEW</a></td>
                 </tr>
             </tbody>
             {% endfor %}
         </table>
+    </div>
+    {% else %}
+    <div class="reportsTableBox">
+        <h3>Yours Reports</h3>
+        <p class="text-justify">U haven't uploaded a file. To upload click on <a href="{% url 'upload' %}">Upload & Analyze</a></p>
     </div>
     {% endif %}
 </div>

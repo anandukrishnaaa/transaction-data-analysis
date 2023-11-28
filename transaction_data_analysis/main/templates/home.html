@@ -5,5 +5,12 @@
     Home
 {% endblock title %}
 {% block content %}
-    <h1>Welcome home!</h1>
+<div class="welcome-section content-hidden">
+    <div class="content-wrap ">
+        <ul class="fly-in-text text-center">
+            <li>Welcome</li>
+            <li>{{ user.first_name }}</li>
+        </ul>
+    </div>
+</div>
 {% endblock content %}

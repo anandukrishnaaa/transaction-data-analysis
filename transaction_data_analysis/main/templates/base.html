@@ -29,54 +29,54 @@
         {% bootstrap_javascript %}
         <!-- Load custom script and style -->
         <link rel="stylesheet" href={% static "css/main.css" %}>
+        <link rel="stylesheet" href={% static "css/modify.css" %}>
         <script src={% static "js/main.js" %} defer></script>
         <script src={% static "js/Sortable.min.js" %} defer></script>
+        <script src={% static "js/modify.js" %} defer></script>
+
+        <!-- boxicons icons-->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
     </head>
     <body>
         {% bootstrap_messages %}
-        <nav class="navbar navbar-expand-lg navbar-light"
-             style="background-color: #e3f2fd">
-            <div class="container">
-                <a class="navbar-brand" href="{% url "home" %}">
-                    <img src="{% static "img/favicon.png" %}" width="50" height="50" class="d-inline-block" alt="Data Wizard site logo">
-                    Data Wizard
-                </a>
-                <button class="navbar-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#navbarNav"
-                        aria-controls="navbarNav"
-                        aria-expanded="false"
-                        aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ml-auto">
+        <div class="container-fluid" id="navbar">
+            <div class="row d-flex">
+                <div class="col-md-4">
+                    <h3 class="logo">
+                        <span>
+                            <img src="{% static 'img/favicon.png' %}" alt="Logo" width="90px">
+                            Data Wizard
+                        </span>
+                    </h3>
+                </div>
+                <div class="col-md-8">
+                    <ul class="navlinks">
                         {% if user.is_authenticated %}
-                            <li class="nav-item">
-                                <span class="nav-link">Logged in as: {{ user.first_name }}</span>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url "upload" %}">Upload and analyze</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url "logout" %}">Logout</a>
-                            </li>
+                        <li><a href="{% url 'home' %}">HOME</a></li>
+                        <li><a href="{% url 'upload' %}">Upload & Analyze</a></li>
+                        <li class="navbarmachine" style="display: none;"><a href="{% url 'upload' %}">Machine Learning</a>
+                        </li>
+                        <!-- machine learning is curently disabled -->
+                        <!-- href of reports need to be change to appropriate one -->
+                        <li><a href="{% url 'upload' %}">Reports</a></li>
+                        <li><a href="{% url 'logout' %}">Logout</a></li>
+                        <li title="Switch the mode"><i class='bx bxs-moon' id="darkMode-icon"></i></li>
                         {% else %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'login' %}">Login</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'register' %}">Register</a>
-                            </li>
+                        <li><a href="{% url 'login' %}"><i class='bx bxs-user' style="font-size: 2rem;"></i></a></li>
+                        <!-- <li><a href="{% url 'register' %}">Register</a></li> -->
+                        <li><i class='bx bxs-moon' id="darkMode-icon"></i></li>
+    
                         {% endif %}
+                        <li class="icon" style="display: none;"><i class="fa-solid fa-xmark"></i></li>
+                        <li class="icon" style="display: none;"><i class="fa-solid fa-bars"></i></li>
                     </ul>
                 </div>
             </div>
-        </nav>
+        </div>
+    
         <div class="container">
-            {% block content %}
-            {% endblock content %}
+            {% block content %}{% endblock content %}
         </div>
     </body>
 </html>
