@@ -55,11 +55,11 @@
                         {% if user.is_authenticated %}
                         <li><a href="{% url 'home' %}">HOME</a></li>
                         <li><a href="{% url 'upload' %}">Upload & Analyze</a></li>
-                        <li class="navbarmachine" style="display: none;"><a href="{% url 'upload' %}">Machine Learning</a>
-                        </li>
+                        <!-- <li class="navbarmachine" style="display: none;"><a href="{% url 'upload' %}">Machine Learning</a>
+                        </li> -->
                         <!-- machine learning is curently disabled -->
                         <!-- href of reports need to be change to appropriate one -->
-                        <li><a href="{% url 'upload' %}">Reports</a></li>
+                        <!-- <li><a href="{% url 'upload' %}">Reports</a></li> -->
                         <li><a href="{% url 'logout' %}">Logout</a></li>
                         <li title="Switch the mode"><i class='bx bxs-moon' id="darkMode-icon"></i></li>
                         {% else %}

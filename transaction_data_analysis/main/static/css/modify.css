@@ -506,3 +506,26 @@ thead{
 .gaussian{
     color: var(--hover-color2);
 }
+.anomalies h3{
+    color: var(--hover-color);
+    padding-top: 2rem;
+}
+.anomalies table{
+    background-color: var(--form);
+}
+/* customer select drop down in run ml mode */
+
+.runMlModel h3{
+    color: var(--hover-color);
+}
+.runMlModel table{
+    background-color: var(--form);
+}
+
+
+#nameOrig{
+    background-color: var(--form);
+    color: var(--text-hover);
+    border-radius: 10px;
+    margin-left: 1rem;
+}
