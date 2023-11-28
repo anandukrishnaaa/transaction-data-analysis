@@ -53,6 +53,7 @@
                 <div class="col-md-8">
                     <ul class="navlinks">
                         {% if user.is_authenticated %}
+                        <li id="clock"></li>
                         <li><a href="{% url 'home' %}">HOME</a></li>
                         <li><a href="{% url 'upload' %}">Upload & Analyze</a></li>
                         <!-- <li class="navbarmachine" style="display: none;"><a href="{% url 'upload' %}">Machine Learning</a>
@@ -63,6 +64,7 @@
                         <li><a href="{% url 'logout' %}">Logout</a></li>
                         <li title="Switch the mode"><i class='bx bxs-moon' id="darkMode-icon"></i></li>
                         {% else %}
+                        <li id="clock"></li>
                         <li><a href="{% url 'login' %}"><i class='bx bxs-user' style="font-size: 2rem;"></i></a></li>
                         <!-- <li><a href="{% url 'register' %}">Register</a></li> -->
                         <li><i class='bx bxs-moon' id="darkMode-icon"></i></li>

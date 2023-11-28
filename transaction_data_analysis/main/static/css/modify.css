@@ -530,3 +530,12 @@ thead{
     margin-left: 1rem;
 }
 
+/* time in navbar */
+
+#clock {
+    font-size: 1rem;
+    width: 110px;
+    text-align: center;
+    border-radius: 20px;
+    /* color: red; */
+}
