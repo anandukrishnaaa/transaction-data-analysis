@@ -21,7 +21,7 @@
                 {% bootstrap_form file_upload_form layout='floating' %}
             </div>
             <div class="fileUpload-box d-flex justify-content-center pt-4">
-                {% bootstrap_button button_type="submit" content="Upload" %}
+               {% bootstrap_button button_type="submit" content="Upload" %}
             </div>
         </form>
     </div>
@@ -57,21 +57,20 @@
                 <tr>
                     <td>SL No</td>
                     <td>File Name</td>
+                    <td>File Size</td>
                     <td>Date</td>
                     <td>Time</td>
-                    <td>Fraud level</td>
                     <td>Action</td>
                 </tr>
             </thead>
             {% for report in user_reports %}
             <tbody>
                 <tr>
-                    <!-- index number should be incremented -->
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ report.file_id.file_id }}</td>
-                    <td title="The date of upload">20/11/2022</td>
-                    <td title="The time of upload">18:34</td>
-                    <td id="fraudLevel" title="Percentage of fraud detected">80%</td>
+                    <td>{{ forloop.counter }}</td> <!-- for loop counter for serial number dynamically-->
+                    <td>{{ report.file_id.file_id }}</td> <!--file name of perviously uploaded files-->
+                    <td title="file size of {{ report.file_id.file_id }}">{{ uploaded_file_details.file_size|filesizeformat }}</td>
+                    <td title="date of upload of {{ report.file_id.file_id }}">20/11/2022</td>
+                    <td title="time of upload of {{ report.file_id.file_id }}">18:34</td>
                     <!-- <td id="fraudLevel" title="Percentage of fraud detected"
                         style="background-color: {% if report.fraud_level >= 80 %}red{% elif report.fraud_level >= 60 %}orange{% else %}green{% endif %};">
                         {{ report.fraud_level }}</td> -->

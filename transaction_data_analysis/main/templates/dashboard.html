@@ -45,7 +45,7 @@ Dashboard
                     </ul>
             </div>
             <div class="col-md-4 dataset">
-                <h5>Displays information about the dataset, including data types and non-null counts.</h5>
+                <h5 class="text-justify">Displays information about the dataset, including data types and non-null counts.</h5>
                 <pre>{{ analysis_result.exploratory_analysis.info | safe }}</pre>
             </div>
             {% if analysis_result.exploratory_analysis.min_max_cols %}

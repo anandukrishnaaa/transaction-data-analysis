@@ -194,7 +194,7 @@ td{
     top: 6rem;
     left: 0;
     overflow: hidden;
-    background-image: url("../img/backgroundAnalysisImage.PNG");
+    background-image: url("../img/backgroundAnalysisImage3.PNG");
     background-size: cover;
     background-repeat: no-repeat;
 }
@@ -529,3 +529,4 @@ thead{
     border-radius: 10px;
     margin-left: 1rem;
 }
+
