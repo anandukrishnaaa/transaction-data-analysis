@@ -18,15 +18,13 @@
     --form:#7e7e7e;
 }
 .dark-mode{
-    --background: #e8e8e8;
+    --background: #e6e6e6;
     --bg-textcolor:#000000;
     --form:#b1b0b0;
 }
 body{
     background-color: var(--background);
     color: var(--bg-textcolor);
-   
-
 }
 html{
    overflow-x: hidden;
@@ -534,8 +532,10 @@ thead{
 
 #clock {
     font-size: 1rem;
-    width: 110px;
+    width: 115px;
     text-align: center;
     border-radius: 20px;
-    /* color: red; */
+    color:var(--bg-textcolor);
+    background-color: var(--bg-main);
+    border: 4px solid var(--hover-color);
 }
