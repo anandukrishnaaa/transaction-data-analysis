@@ -1,441 +1,600 @@
+# Basic libraries
 import pandas as pd
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import GroupShuffleSplit
-from sklearn.metrics import accuracy_score
+import numpy as np
+import os
+from django.conf import settings
+
+# Visualization libraries
+
+import plotly.graph_objects as go
+
+# preprocessing libraries
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+
+# ML libraries
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.svm import SVC
 import joblib
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GridSearchCV
+from sklearn.linear_model import LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.feature_extraction.text import CountVectorizer
+from scipy.sparse import hstack
 
-# Constants
-RF_MODEL_PATH = "models/random_forest_model.pkl"
-LR_MODEL_PATH = "models/logistic_regression_model.pkl"
-PREPROCESSOR_PATH = "models/preprocessor.pkl"
-NUMERICAL_FEATURES_PATH = "models/numerical_features.pkl"
-CATEGORICAL_FEATURES_PATH = "models/categorical_features.pkl"
+
+# Metrics Libraries
+from sklearn import metrics
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import classification_report
 
 
-# Function to train models
-def train_models(dataset_path, RF_MODEL_PATH, LR_MODEL_PATH):
-    df = pd.read_csv(dataset_path)
+# Misc libraries
+import warnings
 
-    # Extract features and target variable
-    X = df.drop(["isFraud", "isFlaggedFraud"], axis=1)
-    y = df["isFraud"]
+from .logger_config import set_logger
 
-    # Define numerical and categorical features
-    numerical_features = X.select_dtypes(include=["float64", "int64"]).columns
-    categorical_features = X.select_dtypes(include=["object"]).columns
+ic = set_logger(print_to_console=False)
 
-    # Create transformers for numerical and categorical features
-    numerical_transformer = StandardScaler()
-    categorical_transformer = OneHotEncoder(handle_unknown="ignore")
+warnings.filterwarnings("ignore")
 
-    # Create a preprocessor with separate transformers for numerical and categorical features
-    preprocessor = ColumnTransformer(
-        transformers=[
-            ("num", numerical_transformer, numerical_features),
-            ("cat", categorical_transformer, categorical_features),
-        ],
-    )
+# Model Training
 
-    # Create pipelines for Random Forest and Logistic Regression models
-    rf_pipeline = Pipeline(
-        [
-            ("preprocessor", preprocessor),
-            (
-                "classifier",
-                RandomForestClassifier(class_weight="balanced", random_state=42),
-            ),
+BEST_MODEL_PATH = settings.BASE_DIR / "main/utils/models/nbModel_grid.pkl"
+SCALER_PATH = settings.BASE_DIR / "main/utils/models/scaler.pkl"
+VECTORIZER_DEST_PATH = settings.BASE_DIR / "main/utils/models/vectorizer_dest.pkl"
+VECTORIZER_ORG_PATH = settings.BASE_DIR / "main/utils/models/vectorizer_org.pkl"
+
+"""
+Preprocessing the data, putting it through different classification algos to find the one best suited for our purpose and fine tune it to be accurate and robust.
+"""
+
+
+def train_main_model(file_path):
+    """
+    Feature engineering:
+        Time to get our hands dirty with feature engineering. With the available information it is hard to train the model and get better results. Hence we move onto create new features by altering the existing features. In this we create three functions which creates a highly relevant feature for the domain
+
+            - Difference in balance: It is an universal truth that the amount debited from senders account gets credited into the receivers account without any deviation in cents. But what if there is a deviation incase of the amount debited and credited. Some could be due to the charges levied by the service providers, yet we need to flag such unusual instances
+
+            - Surge indicator: Also we have to trigger flag when large amount are involved in the transaction. From the distribution of amount we understood that we have a lot of outliers with high amount in transactions. Hence we consider the 75th percentile(450k) as our threshold and amount which is greater than 450k will be triggered as a flag
+
+            - Frequency indicator: Here we flag the user and not the transaction. When there is a receiver who receives money from a lot of people, it could be a trigger as it can be for some illegal games of chance or luck. Hence it is flagged when there is a receiver who receives money for more than 20 times.
+
+            - Merchant indicator: The customer ids in receiver starts with 'M' which means that they are merchants and they obviously will have a lot of receiving transactions. So we also flag whenever there is a merchant receiver
+    """
+    # Load dataset
+    paysim = pd.read_csv(file_path)
+
+    # Tallying the balance
+    def balance_diff(data):
+        """balance_diff checks whether the money debited from sender has exactly credited to the receiver
+        then it creates a new column which indicates 1 when there is a deviation else 0
+        """
+        # Sender's balance
+        orig_change = data["newbalanceOrig"] - data["oldbalanceOrg"]
+        orig_change = orig_change.astype(int)
+        for i in orig_change:
+            if i < 0:
+                data["orig_txn_diff"] = round(data["amount"] + orig_change, 2)
+            else:
+                data["orig_txn_diff"] = round(data["amount"] - orig_change, 2)
+        data["orig_txn_diff"] = data["orig_txn_diff"].astype(int)
+        data["orig_diff"] = [1 if n != 0 else 0 for n in data["orig_txn_diff"]]
+
+        # Receiver's balance
+        dest_change = data["newbalanceDest"] - data["oldbalanceDest"]
+        dest_change = dest_change.astype(int)
+        for i in dest_change:
+            if i < 0:
+                data["dest_txn_diff"] = round(data["amount"] + dest_change, 2)
+            else:
+                data["dest_txn_diff"] = round(data["amount"] - dest_change, 2)
+        data["dest_txn_diff"] = data["dest_txn_diff"].astype(int)
+        data["dest_diff"] = [1 if n != 0 else 0 for n in data["dest_txn_diff"]]
+
+        data.drop(["orig_txn_diff", "dest_txn_diff"], axis=1, inplace=True)
+
+    # Surge indicator
+    def surge_indicator(data):
+        """Creates a new column which has 1 if the transaction amount is greater than the threshold
+        else it will be 0"""
+        data["surge"] = [1 if n > 450000 else 0 for n in data["amount"]]
+
+    # Frequency indicator
+    def frequency_receiver(data):
+        """Creates a new column which has 1 if the receiver receives money from many individuals
+        else it will be 0"""
+        data["freq_Dest"] = data["nameDest"].map(data["nameDest"].value_counts())
+        data["freq_dest"] = [1 if n > 20 else 0 for n in data["freq_Dest"]]
+
+        data.drop(["freq_Dest"], axis=1, inplace=True)
+
+    # Tracking the receiver as merchant or not
+    def merchant(data):
+        """We also have customer ids which starts with M in Receiver name, it indicates merchant
+        this function will flag if there is a merchant in receiver end"""
+        values = ["M"]
+        conditions = list(map(data["nameDest"].str.contains, values))
+        data["merchant"] = np.select(conditions, "1", "0")
+
+    # Applying balance_diff function
+    balance_diff(paysim)
+
+    # print(paysim["orig_diff"].value_counts()) // TODO: for out
+    # print(paysim["dest_diff"].value_counts()) // TODO: for out
+
+    # Applying surge_indicator function
+    surge_indicator(paysim)
+    # print(paysim["surge"].value_counts())  // TODO: for out
+
+    # Applying frequency_receiver function
+    frequency_receiver(paysim)
+    # print(paysim["freq_dest"].value_counts())  // TODO: for out
+
+    """
+    Pre-processing data
+        Before moving to build a machine learning model, it is mandatory to pre-process the data so that the model trains without any error and can learn better to provide better results
+
+        - Balancing the target
+            From the pie chart below we can clearly see that the target label is heavily imbalance as we usually have only 0.2% of fraudulent data which is in-sufficient for machine to learn and flag when fraud transactions happen.
+    """
+    # Creating a copy
+    paysim_1 = paysim.copy()
+
+    # Checking for balance in target
+    balance_target_plot = go.Figure(
+        data=[
+            go.Pie(
+                labels=["Not Fraud", "Fraud"],
+                values=paysim_1["isFraud"].value_counts(),
+                title="Checking for balance in target",
+            )
         ]
     )
 
-    lr_pipeline = Pipeline(
-        [
-            ("preprocessor", preprocessor),
-            (
-                "classifier",
-                LogisticRegression(class_weight="balanced", random_state=42),
-            ),
+    # Getting the max size
+    max_size = paysim_1["isFraud"].value_counts().max()
+
+    # Balancing the target label
+    lst = [paysim_1]
+    for class_index, group in paysim_1.groupby("isFraud"):
+        lst.append(group.sample(max_size - len(group), replace=True))
+    paysim_1 = pd.concat(lst)
+
+    # Checking the balanced target
+    check_balance_target_plot = go.Figure(
+        data=[
+            go.Pie(
+                labels=["Not Fraud", "Fraud"],
+                values=paysim_1["isFraud"].value_counts(),
+                title="Checking the balanced target",
+            )
         ]
     )
 
-    # Split the dataset into training and testing sets using GroupShuffleSplit
-    splitter = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
-    train_idx, test_idx = next(splitter.split(X, y, groups=df["nameOrig"]))
-    X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
-    y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+    """
+        - One hot encoding
+            One of the most important feature we have is type which is categorical in type. Since it doesnt have any ordinal nature and since the classes are less, we prefer applying one hot encoding.
+    """
+    # One hot encoding
+    paysim_1 = pd.concat(
+        [paysim_1, pd.get_dummies(paysim_1["type"], prefix="type_")], axis=1
+    )
+    paysim_1.drop(["type"], axis=1, inplace=True)
 
-    # Train the models
-    rf_pipeline.fit(X_train, y_train)
-    lr_pipeline.fit(X_train, y_train)
+    # print(paysim_1.head()) // TODO: for out
 
-    # Evaluate models on the test set (optional)
-    rf_predictions = rf_pipeline.predict(X_test)
-    lr_predictions = lr_pipeline.predict(X_test)
+    """
+        - Split and Standardize
+            In this module we create the independent and dependent feature, then split them into train and test data where training size is 70%. Later we collect all the numerical features and apply StandardScaler() function which transforms the distribution so that the mean becomes 0 and standard deviation becomes 1
+    """
+    # Splitting dependent and independent variable
+    paysim_2 = paysim_1.copy()
+    X = paysim_2.drop("isFraud", axis=1)
+    y = paysim_2["isFraud"]
 
-    print(f"Random Forest Accuracy: {accuracy_score(y_test, rf_predictions)}")
-    print(f"Logistic Regression Accuracy: {accuracy_score(y_test, lr_predictions)}")
+    # Train-test split
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, train_size=0.7, random_state=111
+    )
 
-    # Save the trained models and preprocessor to files
-    joblib.dump(rf_pipeline, RF_MODEL_PATH)
-    joblib.dump(lr_pipeline, LR_MODEL_PATH)
-    joblib.dump(preprocessor, PREPROCESSOR_PATH)
-    joblib.dump(numerical_features, NUMERICAL_FEATURES_PATH)
-    joblib.dump(categorical_features, CATEGORICAL_FEATURES_PATH)
-
-
-# Function to preprocess data before making predictions
-def preprocess_data(df, preprocessor):
-    return preprocessor.transform(df)
-
-
-# Function to predict using the Random Forest model
-def predict_rf(X_processed, RF_MODEL_PATH):
-    # Load the trained Random Forest model
-    rf_model = joblib.load(RF_MODEL_PATH)
-
-    # Make predictions using the Random Forest model
-    predictions = rf_model.predict(X_processed)
-
-    return predictions
-
-
-# Function to predict using the Logistic Regression model
-def predict_lr(X_processed, LR_MODEL_PATH):
-    # Load the trained Logistic Regression model
-    lr_model = joblib.load(LR_MODEL_PATH)
-
-    # Make predictions using the Logistic Regression model
-    predictions = lr_model.predict(X_processed)
-
-    return predictions
-
-
-# Function to get fraud information
-def get_fraud_info(dataset_path, name_orig, RF_MODEL_PATH, LR_MODEL_PATH, preprocessor):
-    # Load the trained models
-    rf_model = joblib.load(RF_MODEL_PATH)
-    lr_model = joblib.load(LR_MODEL_PATH)
-
-    # Load your dataset
-    df = pd.read_csv(dataset_path)
-
-    # Filter data for the specific customer
-    customer_df = df[df["nameOrig"] == name_orig].copy()
-
-    # Feature engineering (customize based on your dataset)
-    customer_df["transaction_frequency"] = customer_df.groupby("nameOrig")[
-        "step"
-    ].transform("count")
-    customer_df["time_since_last_transaction"] = customer_df.groupby("nameOrig")[
-        "step"
-    ].diff()
-
-    # Separate the target variable
-    y = customer_df["isFraud"]
-
-    # Prepare features for anomaly detection
-    features = customer_df[
-        [
-            "step",
-            "amount",
-            "oldbalanceOrg",
-            "newbalanceOrig",
-            "oldbalanceDest",
-            "newbalanceDest",
-            "transaction_frequency",
-            "time_since_last_transaction",
-        ]
+    # Standardizing the numerical columns
+    col_names = [
+        "amount",
+        "oldbalanceOrg",
+        "newbalanceOrig",
+        "oldbalanceDest",
+        "newbalanceDest",
     ]
+    features_train = X_train[col_names]
+    features_test = X_test[col_names]
+    scaler = StandardScaler().fit(features_train.values)
+    # Save the instances to files
+    if scaler:
+        joblib.dump(scaler, SCALER_PATH)
 
-    # Preprocess your features using the preprocessor fit on the training data
-    X_processed = preprocessor.transform(features)
+    features_train = scaler.transform(features_train.values)
+    features_test = scaler.transform(features_test.values)
+    X_train[col_names] = features_train
+    X_test[col_names] = features_test
 
-    # Make predictions using the Random Forest model
-    rf_predictions = rf_model.predict(X_processed)
+    """
+        - Tokenization
+            We had the customer ids and merchant ids stored in object type. It is bad to apply one hot encoding in it as it can lead to more features and curse of dimensionality can incur. Hence we are applying tokenization here as it can create an unique id number which is in 'int' type for each customer id
+    """
 
-    # Make predictions using the Logistic Regression model
-    lr_predictions = lr_model.predict(X_processed)
+    # Tokenization using scikit-learn CountVectorizer
+    vectorizer_org = CountVectorizer()
+    vectorizer_dest = CountVectorizer()
 
-    # Calculate the victim probability using the Logistic Regression model
-    victim_probability = lr_model.predict_proba(X_processed)[:, 1].mean()
+    # Fit and transform on the training data
+    customers_train_org = vectorizer_org.fit_transform(X_train["nameOrig"])
+    customers_train_dest = vectorizer_dest.fit_transform(X_train["nameDest"])
 
-    # Calculate the perpetrator probability using the Random Forest model
-    perpetrator_probability = rf_model.predict_proba(X_processed)[:, 1].mean()
+    # Transform the test data
+    customers_test_org = vectorizer_org.transform(X_test["nameOrig"])
+    customers_test_dest = vectorizer_dest.transform(X_test["nameDest"])
 
-    # Determine if the person has been a victim of fraud
-    has_been_frauded = 1 if victim_probability > 0 else 0
+    # Save the instances to files
+    if vectorizer_org:
+        joblib.dump(vectorizer_org, VECTORIZER_ORG_PATH)
+    if vectorizer_dest:
+        joblib.dump(vectorizer_dest, VECTORIZER_DEST_PATH)
 
-    # Determine if the person has committed fraud
-    has_committed_fraud = 1 if perpetrator_probability > 0 else 0
+    # Reset the index of X_train and X_test
+    X_train.reset_index(drop=True, inplace=True)
+    X_test.reset_index(drop=True, inplace=True)
 
-    fraud_info = {
-        "has_been_frauded": has_been_frauded,
-        "has_committed_fraud": has_committed_fraud,
-        "victim_probability": victim_probability,
-        "perpetrator_probability": perpetrator_probability,
+    # Concatenate the DataFrames
+    X_train = pd.concat(
+        [
+            X_train.drop(["nameOrig", "nameDest", "isFlaggedFraud"], axis=1),
+            pd.DataFrame(hstack([customers_train_org, customers_train_dest]).toarray()),
+        ],
+        axis=1,
+        ignore_index=True,
+    )
+
+    X_test = pd.concat(
+        [
+            X_test.drop(["nameOrig", "nameDest", "isFlaggedFraud"], axis=1),
+            pd.DataFrame(hstack([customers_test_org, customers_test_dest]).toarray()),
+        ],
+        axis=1,
+        ignore_index=True,
+    )
+
+    """
+    - Model Building
+    We have successfully processed the data and it is time for serving the data to the model. It is time consuming to find out which model works best for our data. Hence I have utlized pipeline to run our data through all the classification algorithm and select the best which gives out the maximum accuracy.
+    """
+
+    # creating the objects
+    logreg_cv = LogisticRegression(solver="liblinear", random_state=123)
+    dt_cv = DecisionTreeClassifier(random_state=123)
+    knn_cv = KNeighborsClassifier()
+    svc_cv = SVC(kernel="linear", random_state=123)
+    nb_cv = GaussianNB()
+    rf_cv = RandomForestClassifier(random_state=123)
+    cv_dict = {
+        0: "Logistic Regression",
+        1: "Decision Tree",
+        2: "KNN",
+        3: "SVC",
+        4: "Naive Bayes",
+        5: "Random Forest",
+    }
+    cv_models = [logreg_cv, dt_cv, knn_cv, svc_cv, nb_cv, rf_cv]
+
+    # Create an empty dictionary to store results
+    algo_compare_results = {}  # TODO: for out
+
+    for i, model in enumerate(cv_models):
+        # Perform cross-validation and store results
+        accuracy_scores = cross_val_score(
+            model, X_train, y_train, cv=10, scoring="accuracy"
+        )
+        algo_compare_results[cv_dict[i]] = {
+            "mean_accuracy": accuracy_scores.mean(),
+            "standard_deviation": accuracy_scores.std(),
+            "accuracy_scores": accuracy_scores.tolist(),
+        }
+
+    # Print or save the results as needed
+    # for model_name, results in algo_compare_results.items():
+    #     print(f"{model_name}:\n{results}\n")
+
+    """
+    - Hyperparameter Tuning
+        Lets fit the Naive bayes model by tuning the model with its parameters. Here we are gonna tune var_smoothing which is a stability calculation to widen (or smooth) the curve and therefore account for more samples that are further away from the distribution mean. In this case, np.logspace returns numbers spaced evenly on a log scale, starts from 0, ends at -9, and generates 100 samples.
+    """
+
+    param_grid_nb = {"var_smoothing": np.logspace(0, -9, num=100)}
+
+    nbModel_grid = GridSearchCV(
+        estimator=GaussianNB(), param_grid=param_grid_nb, verbose=1, cv=10, n_jobs=-1
+    )
+    nbModel_grid.fit(X_train, y_train)
+    # Save the model after fitting the test data
+    if nbModel_grid:
+        joblib.dump(nbModel_grid, BEST_MODEL_PATH)
+
+    # print(nbModel_grid.best_estimator_)  //TODO: for out
+
+    """
+    - Evaluation of model
+        Time to explore the truth of high numbers by evaluating against testing data
+    """
+
+    # Function for Confusion matrix
+    def plot_confusion_matrix(cm, classes, normalize=False, title="Confusion matrix"):
+        """
+        This function prints and plots the confusion matrix.
+        Normalization can be applied by setting `normalize=True`.
+        """
+        if normalize:
+            cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
+            print("Normalized confusion matrix")
+        else:
+            print("Confusion matrix, without normalization")
+
+        # Create a trace for the heatmap
+        trace = go.Heatmap(
+            z=cm,
+            x=classes,
+            y=classes,
+            colorscale="Blues",
+            showscale=True,
+            colorbar=dict(title="Count"),
+        )
+
+        layout = go.Layout(
+            title=title,
+            xaxis=dict(title="Predicted label"),
+            yaxis=dict(title="True label"),
+        )
+
+        confusion_matrix_plot = go.Figure(data=[trace], layout=layout)
+        return confusion_matrix_plot
+
+    # Predict with the selected best parameter
+    y_pred = nbModel_grid.predict(X_test)
+
+    # Plotting confusion matrix
+    cm = metrics.confusion_matrix(y_test, y_pred)
+    confusion_matrix_plot = plot_confusion_matrix(
+        cm, classes=["Not Fraud", "Fraud"]
+    )  # // TODO: for out
+
+    """
+    The model has identified false positives but never let even a single false negative which is more important than False Positive. Since we can't miss out a fraud transactions, but we can manage false positive results by investigating them
+    """
+
+    # Classification metrics
+    classification_report_result = classification_report(
+        y_test, y_pred, target_names=["Not Fraud", "Fraud"]
+    )  # TODO: for out
+
+    train_main_model_result = {
+        "orig_diff_count": ic(paysim["orig_diff"].value_counts()),
+        "dest_diff_count": ic(paysim["dest_diff"].value_counts()),
+        "surge_count": ic(paysim["surge"].value_counts()),
+        "freq_dest": ic(paysim["freq_dest"].value_counts()),
+        "balance_target_plot": ic(balance_target_plot),
+        "check_balance_target_plot": ic(check_balance_target_plot),
+        "data_head": ic(
+            paysim_1.head().to_html(
+                classes="table table-bordered table-striped", escape=False, index=False
+            )
+        ),
+        "algo_compare_results": ic(algo_compare_results),
+        "nbModel_grid_estimate": ic(nbModel_grid.best_estimator_),
+        "confusion_matrix_plot": ic(confusion_matrix_plot),
+        "classification_report_result": ic(classification_report_result),
     }
 
-    return fraud_info
+    """
+    When we found that our false negatives are more important than false positives, we have to look at the recall number and we have 100% recall in finding the fraud transactions and 100% precision in finding the non fraud tranactions and on an average our model performs more than 70% accurate which is pretty good and there are possible chance to improve the performance of this model.
+    """
+
+    return train_main_model_result
 
 
-# Function to predict fraud-prone customers
-def predict_fraud_prone_customers(df, RF_MODEL_PATH, LR_MODEL_PATH, preprocessor):
-    # Load the trained models
-    rf_model = joblib.load(RF_MODEL_PATH)
-    lr_model = joblib.load(LR_MODEL_PATH)
+"""
+Various functions making use of the trained ML model to derive insights from the dataset.
+"""
 
-    # Load feature names
-    numerical_features = joblib.load(NUMERICAL_FEATURES_PATH)
-    categorical_features = joblib.load(CATEGORICAL_FEATURES_PATH)
-
-    # Feature engineering (you can customize this based on your dataset)
-    df["transaction_frequency"] = df.groupby("nameOrig")["step"].transform("count")
-    df["time_since_last_transaction"] = df.groupby("nameOrig")["step"].diff()
-
-    # Include only the features used during training
-    numerical_data = df[numerical_features]
-    categorical_data = df[categorical_features]
-
-    # Combine numerical and categorical features
-    features = pd.concat([numerical_data, categorical_data], axis=1)
-
-    # Preprocess your features
-    features_processed = preprocess_data(features, preprocessor)
-
-    # Make predictions using the Logistic Regression model
-    lr_predictions = lr_model.predict(features_processed)
-
-    # Make predictions using the Random Forest model
-    rf_predictions = rf_model.predict(features_processed)
-
-    # Identify fraud-prone customers based on both models
-    fraud_prone_customers = df[(lr_predictions == 1) & (rf_predictions == 1)][
-        "nameOrig"
-    ].unique()
-
-    return fraud_prone_customers
+# Load the instances from files
+# scaler = joblib.load(SCALER_PATH)
+# vectorizer_org = joblib.load(VECTORIZER_ORG_PATH)
+# vectorizer_dest = joblib.load(VECTORIZER_DEST_PATH)
 
 
-# Function to compute fraud probabilities
-def compute_fraud_probabilities(df, RF_MODEL_PATH, LR_MODEL_PATH, preprocessor):
-    # Load the trained models
-    rf_model = joblib.load(RF_MODEL_PATH)
-    lr_model = joblib.load(LR_MODEL_PATH)
+def custom_model_check(file_path):
+    if not os.path.exists(BEST_MODEL_PATH):
+        # File does not exist exists, load the train_main_model library to generate BEST_MODEL_PATH file
+        ic("Custom model does not exist at BEST_MODEL_PATH, attempting to create anew.")
+        ic(train_main_model(file_path))
+        nbModel_grid = joblib.load(BEST_MODEL_PATH)
+        model = nbModel_grid
+    else:
+        nbModel_grid = joblib.load(BEST_MODEL_PATH)
+        model = nbModel_grid
+    # model = GaussianNB()
+    return model
 
-    # Load feature names
-    numerical_features = joblib.load(NUMERICAL_FEATURES_PATH)
-    categorical_features = joblib.load(CATEGORICAL_FEATURES_PATH)
 
-    # Feature engineering (you can customize this based on your dataset)
-    df["transaction_frequency"] = df.groupby("nameOrig")["step"].transform("count")
-    df["time_since_last_transaction"] = df.groupby("nameOrig")["step"].diff()
-
-    # Include only the features used during training
-    numerical_data = df[numerical_features]
-    categorical_data = df[categorical_features]
-
-    # Combine numerical and categorical features
-    features = pd.concat([numerical_data, categorical_data], axis=1)
-
-    # Preprocess your features
-    features_processed = preprocess_data(features, preprocessor)
-
-    # Make predictions using the Logistic Regression model
-    lr_predictions = lr_model.predict(features_processed)
-
-    # Make predictions using the Random Forest model
-    rf_predictions = rf_model.predict(features_processed)
-
-    # Calculate fraud probabilities based on both models
-    fraud_probabilities = pd.DataFrame(
-        {
-            "nameOrig": df["nameOrig"],
-            "fraud_probability_lr": lr_model.predict_proba(features_processed)[:, 1],
-            "fraud_probability_rf": rf_model.predict_proba(features_processed)[:, 1],
-        }
+# Data preprocessing
+def load_and_prep_df(file_path):
+    # Loading into dataframe
+    df = pd.read_csv(file_path)
+    df["type"] = df["type"].map(
+        {"CASH_OUT": 1, "PAYMENT": 2, "CASH_IN": 3, "TRANSFER": 4, "DEBIT": 5}
     )
+    df["isFraud"] = df["isFraud"].map({0: "No Fraud", 1: "Fraud"})
 
-    # Identify customers with high fraud probabilities
-    high_fraud_probabilities = df[
-        (fraud_probabilities["fraud_probability_lr"] > 0.5)
-        & (fraud_probabilities["fraud_probability_rf"] > 0.5)
-    ]["nameOrig"].unique()
-
-    return fraud_probabilities, high_fraud_probabilities
+    return df
 
 
-# Function to find the amount associated with the most fraudulent transaction
-def find_most_fraudulent_amount(df, RF_MODEL_PATH, preprocessor):
-    # Load the trained Random Forest model
-    rf_model = joblib.load(RF_MODEL_PATH)
+# Function to train the model
+def train_sub_model(df, model):
+    x = np.array(df[["type", "amount", "oldbalanceOrg", "newbalanceOrig"]])
+    y = np.array(df["isFraud"])
+    xtrain, xtest, ytrain, ytest = train_test_split(
+        x, y, test_size=0.10, random_state=42
+    )
+    model.fit(xtrain, ytrain)
+    return model, xtest, ytest
 
-    # Load feature names
-    numerical_features = joblib.load(NUMERICAL_FEATURES_PATH)
-    categorical_features = joblib.load(CATEGORICAL_FEATURES_PATH)
 
-    # Feature engineering (you can customize this based on your dataset)
-    df["transaction_frequency"] = df.groupby("nameOrig")["step"].transform("count")
-    df["time_since_last_transaction"] = df.groupby("nameOrig")["step"].diff()
+# Get unique customer names to be shown in the template
+def get_customer_ids(df):
+    # Fetch unique values from the "nameOrig" column
+    customer_ids = df["nameOrig"].unique()
 
-    # Include only the features used during training
-    numerical_data = df[numerical_features]
-    categorical_data = df[categorical_features]
+    # Convert unique values to a list for dropdown
+    customer_ids_list = customer_ids.tolist()
 
-    # Combine numerical and categorical features
-    features = pd.concat([numerical_data, categorical_data], axis=1)
+    return customer_ids_list
 
-    # Preprocess your features
-    features_processed = preprocess_data(features, preprocessor)
 
-    # Make predictions using the Random Forest model
-    rf_predictions = rf_model.predict(features_processed)
-
-    # Identify transactions with high anomaly scores (potential fraud)
-    high_anomaly_transactions = df[rf_predictions == 1]
-
-    # Find the amount associated with the most fraudulent transaction
-    most_fraudulent_amount = high_anomaly_transactions.loc[
-        high_anomaly_transactions["amount"].idxmax()
-    ]["amount"]
+# Find the most fraudulent amount in the given dataset
+def find_most_fraudulent_amount(df):
+    fraud_data = df[df["isFraud"] == "Fraud"]
+    most_fraudulent_amount = fraud_data["amount"].max()
+    most_fraudulent_amount = most_fraudulent_amount.item()
 
     return most_fraudulent_amount
 
 
-# Function to get anomalies and patterns for the entire dataset
-def get_anomalies_and_patterns(df, RF_MODEL_PATH, preprocessor):
-    # Load the trained Random Forest model
-    rf_model = joblib.load(RF_MODEL_PATH)
-
-    # Load feature names
-    numerical_features = joblib.load(NUMERICAL_FEATURES_PATH)
-    categorical_features = joblib.load(CATEGORICAL_FEATURES_PATH)
-
-    # Feature engineering (customize based on your dataset)
-    df["transaction_frequency"] = df.groupby("nameOrig")["step"].transform("count")
-    df["time_since_last_transaction"] = df.groupby("nameOrig")["step"].diff()
-
-    # Include only the features used during training
-    numerical_data = df[numerical_features]
-    categorical_data = df[categorical_features]
-
-    # Combine numerical and categorical features
-    features = pd.concat([numerical_data, categorical_data], axis=1)
-
-    # Preprocess your features
-    features_processed = preprocess_data(features, preprocessor)
-
-    # Make predictions using the Random Forest model
-    rf_predictions = rf_model.predict(features_processed)
-
-    # Identify transactions with high anomaly scores (potential fraud)
-    high_anomaly_transactions = df[rf_predictions == 1]
-
-    # Find the amount associated with the most fraudulent transaction
-    most_fraudulent_amount = high_anomaly_transactions.loc[
-        high_anomaly_transactions["amount"].idxmax()
-    ]["amount"]
-
-    # Extract anomalies and patterns
-    anomalies_and_patterns = {
-        "most_fraudulent_amount": most_fraudulent_amount,
-        "high_anomaly_transactions": high_anomaly_transactions,
-        # Add more features, anomalies, and patterns as needed
-    }
-
-    return anomalies_and_patterns
+# TODO: for out
 
 
-# Function to get anomalies and patterns for a specific customer
-def get_anomalies_and_patterns_for_customer(
-    df, customer_name, RF_MODEL_PATH, preprocessor
-):
-    # Load the trained Random Forest model
-    rf_model = joblib.load(RF_MODEL_PATH)
-
-    # Load feature names
-    numerical_features = joblib.load(NUMERICAL_FEATURES_PATH)
-    categorical_features = joblib.load(CATEGORICAL_FEATURES_PATH)
-
-    # Filter data for the specific customer
-    customer_df = df[df["nameOrig"] == customer_name].copy()
-
-    # Feature engineering (customize based on your dataset)
-    customer_df["transaction_frequency"] = customer_df.groupby("nameOrig")[
-        "step"
-    ].transform("count")
-    customer_df["time_since_last_transaction"] = customer_df.groupby("nameOrig")[
-        "step"
-    ].diff()
-
-    # Include only the features used during training
-    numerical_data = customer_df[numerical_features]
-    categorical_data = customer_df[categorical_features]
-
-    # Combine numerical and categorical features
-    features = pd.concat([numerical_data, categorical_data], axis=1)
-
-    # Preprocess your features
-    features_processed = preprocess_data(features, preprocessor)
-
-    # Make predictions using the Random Forest model
-    rf_predictions = rf_model.predict(features_processed)
-
-    # Identify transactions with high anomaly scores (potential fraud)
-    high_anomaly_transactions = customer_df[rf_predictions == 1]
-
-    # Find the amount associated with the most fraudulent transaction
-    most_fraudulent_amount = high_anomaly_transactions.loc[
-        high_anomaly_transactions["amount"].idxmax()
-    ]["amount"]
-
-    # Extract anomalies and patterns for the specific customer
-    anomalies_and_patterns = {
-        "most_fraudulent_amount": most_fraudulent_amount,
-        "high_anomaly_transactions": high_anomaly_transactions,
-        # Add more features, anomalies, and patterns as needed
-    }
-
-    return anomalies_and_patterns
+# Get anomalies and patterns - find all other interesting anomalies, patterns, and their indications
+def get_anomalies_and_patterns(df, model):
+    anomalies = df[
+        model.predict(
+            np.array(df[["type", "amount", "oldbalanceOrg", "newbalanceOrig"]])
+        )
+        == "Fraud"
+    ]
+    return anomalies  # TODO: for out
 
 
-# Example usage
-path = r"C:\Users\AK\Projects\code\coding-projects\transaction-data-analysis\dataset\sample.csv"
+# Predict fraud-prone customers - find the top x (x can be any number, for example, 10) most fraud-prone customers
+def predict_fraud_prone_customers(model, df, top_x):
+    all_customers = df["nameOrig"].unique()
+    fraud_probabilities = []
 
-# Train models
-# train_models(path, RF_MODEL_PATH, LR_MODEL_PATH)
+    for customer_id in all_customers:
+        customer_data = df[df["nameOrig"] == customer_id]
+        features = np.array(
+            customer_data[["type", "amount", "oldbalanceOrg", "newbalanceOrig"]]
+        )
+        fraud_probability = model.predict_proba(features)[:, 1].mean()
+        fraud_probabilities.append(
+            {"customer_id": customer_id, "fraud_probability": fraud_probability}
+        )
 
-# # Load preprocessor and feature names
-preprocessor = joblib.load(PREPROCESSOR_PATH)
+    fraud_probabilities.sort(key=lambda x: x["fraud_probability"], reverse=True)
+    return fraud_probabilities[:top_x]  # TODO: for out
 
-# # Perform predictions and analyses
-df = pd.read_csv(path)
-name_orig = "C1666544295"
 
-fraud_info = get_fraud_info(path, name_orig, RF_MODEL_PATH, LR_MODEL_PATH, preprocessor)
-print(fraud_info)
+# Predict least fraud-prone customers - find the bottom x (x can be any number, for example, 10) least fraud-prone customers
+def predict_least_fraud_prone_customers(model, df, bottom_x):
+    all_customers = df["nameOrig"].unique()
+    fraud_probabilities = []
 
-# fraud_prone_customers = predict_fraud_prone_customers(
-#     df, RF_MODEL_PATH, LR_MODEL_PATH, preprocessor
-# )
-# print(fraud_prone_customers)
+    for customer_id in all_customers:
+        customer_data = df[df["nameOrig"] == customer_id]
+        features = np.array(
+            customer_data[["type", "amount", "oldbalanceOrg", "newbalanceOrig"]]
+        )
+        fraud_probability = model.predict_proba(features)[:, 1].mean()
+        fraud_probabilities.append(
+            {"customer_id": customer_id, "fraud_probability": fraud_probability}
+        )
 
-# fraud_probabilities, high_fraud_probabilities = compute_fraud_probabilities(
-#     df, RF_MODEL_PATH, LR_MODEL_PATH, preprocessor
-# )
-# print(fraud_probabilities)
-# print(high_fraud_probabilities)
+    fraud_probabilities.sort(key=lambda x: x["fraud_probability"])
+    return fraud_probabilities[:bottom_x]
 
-# most_fraudulent_amount = find_most_fraudulent_amount(df, RF_MODEL_PATH, preprocessor)
-# print(f"Most Fraudulent Amount: {most_fraudulent_amount}")
 
-# anomalies_and_patterns = get_anomalies_and_patterns(df, RF_MODEL_PATH, preprocessor)
-# print(anomalies_and_patterns)
+# Compute fraud probabilities - compute the fraud probability of each unique customer in the dataset
+def compute_fraud_probabilities(model, df, x=None):
+    all_customers = df["nameOrig"].unique()
+    fraud_probabilities = []
 
-# customer_name = "C1666544295"  # Replace with an actual customer name
-# anomalies_and_patterns_customer = get_anomalies_and_patterns_for_customer(
-#     df, customer_name, RF_MODEL_PATH, preprocessor
-# )
-# print(anomalies_and_patterns_customer)
+    # Limit the number of customer records to fetch
+    if x is not None:
+        all_customers = all_customers[:x]
+
+    for customer_id in all_customers:
+        customer_data = df[df["nameOrig"] == customer_id]
+        features = np.array(
+            customer_data[["type", "amount", "oldbalanceOrg", "newbalanceOrig"]]
+        )
+        fraud_probability = model.predict_proba(features)[:, 1].mean()
+        fraud_probabilities.append(
+            {"customer_id": customer_id, "fraud_probability": fraud_probability}
+        )
+
+    return fraud_probabilities  # TODO: for out
+
+
+# Get anomalies and patterns for a customer - find all other interesting anomalies, patterns, and their indications for a single customer
+def get_anomalies_and_patterns_for_customer(df, model, customer_id):
+    customer_data = df[df["nameOrig"] == customer_id]
+    customer_data.drop(["isFraud", "isFlaggedFraud"], axis=1, inplace=True)
+    # Check if the condition is met
+    if (
+        model.predict(
+            np.array(
+                customer_data[["type", "amount", "oldbalanceOrg", "newbalanceOrig"]]
+            )
+        )
+        == "Fraud"
+    ).any():
+        anomalies = customer_data[
+            model.predict(
+                np.array(
+                    customer_data[["type", "amount", "oldbalanceOrg", "newbalanceOrig"]]
+                )
+            )
+            == "Fraud"
+        ]
+    else:
+        # If no fraud detected, create a DataFrame with all columns as "-" for the first row
+        columns = customer_data.columns
+        data = {col: ["-"] * len(columns) for col in columns}
+        anomalies = pd.DataFrame(data).head(1)
+
+    return anomalies  # TODO: for out
+
+
+# Find out the probability % of a given customer (nameOrig) has_been_frauded, has_committed_fraud, victim_probability, perpetrator_probability
+def get_customer_probabilities(model, df, customer_id):
+    customer_data = df[df["nameOrig"] == customer_id]
+    features = np.array(
+        customer_data[["type", "amount", "oldbalanceOrg", "newbalanceOrig"]]
+    )
+    fraud_probability = model.predict_proba(features)[
+        :, 1
+    ]  # Probability of being fraud
+    return {
+        "has_been_frauded": fraud_probability.mean(),
+        "has_committed_fraud": 1 - fraud_probability.mean(),
+        "victim_probability": (model.predict(features) == "No Fraud").mean(),
+        "perpetrator_probability": (model.predict(features) == "Fraud").mean(),
+    }  # TODO: for out
+
+
+def get_frauds(df):
+    fraud_data = df[df["isFraud"] == "Fraud"]
+    fraud_customers = fraud_data["nameOrig"].unique().tolist()
+    return fraud_customers

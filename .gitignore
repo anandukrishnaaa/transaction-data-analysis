@@ -1,12 +1,11 @@
 # Project level .gitignore file
 .env
-dataset
 **/__pycache__/
 *.sqlite3
 **/.pyc
-**/*.log
+logs/*.log
 migrations
 **/media/uploads
 .vscode
 .venv
-**/*.csv
+dataset/*.csv

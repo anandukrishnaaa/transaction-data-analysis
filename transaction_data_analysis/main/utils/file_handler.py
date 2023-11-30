@@ -13,26 +13,7 @@ ic = set_logger(
 )  # Set print_to_console = True for console outputs
 
 
-def file_preview(file_uploaded, enforce_float=True):
-    if enforce_float:
-        pd.options.display.float_format = "{:.2f}".format
-    df = pd.read_csv(file_uploaded.file_path, index_col=False)
-    file_uploaded.file_path.close()
-    uploaded_file_details = {
-        "head": df.head(10)
-        .to_html(index=False)
-        .replace('class="dataframe"', 'class="table table-sm table-bordered"'),
-        "desc": df.describe()
-        .to_html()
-        .replace('class="dataframe"', 'class="table table-sm table-bordered"'),
-        "path": file_uploaded.file_path.path,
-    }
-    return uploaded_file_details
-
-
 # Exploratory data analysis
-
-uploaded_file_path = r"C:\Users\AK\Projects\code\coding-projects\transaction-data-analysis\dataset\sample.csv"
 
 
 class DataAnalysis:
@@ -40,8 +21,6 @@ class DataAnalysis:
         # An analysis approach that identifies general patterns in the data
         # -- Init dataframe in local scope --
         df = self.source_df
-        df.drop("isFlaggedFraud", axis=1)
-
         # -- Basic summary of the dataset --
         # Create a buffer
         buffer = io.StringIO()
@@ -54,8 +33,8 @@ class DataAnalysis:
         # -- Check for missing values --
         # ic(df.isnull().sum())  # TODO: for out
 
-        # Initialize an empty dictionary to store the results
-        min_max_cols = {}
+        # Initialize an empty list to store the results
+        min_max_cols = []
         # Select only the numerical columns
         numerical_df = df.select_dtypes(include=[np.number])
         # Iterate over each column in the numerical DataFrame
@@ -63,9 +42,12 @@ class DataAnalysis:
             # Get the minimum and maximum values for the column
             min_value = numerical_df[column].min()
             max_value = numerical_df[column].max()
-            # Store the minimum and maximum values in the dictionary
-            min_max_cols[column] = [min_value, max_value]
-        # Results dict
+            # Append a dictionary containing column name, min, and max values to the list
+            min_max_cols.append(
+                {"column": column, "min_value": min_value, "max_value": max_value}
+            )
+
+        # Results list
         # ic(min_max_cols)  # TODO: for out
 
         # -- Downcast numerical columns with smaller dtype --
@@ -363,11 +345,4 @@ class DataAnalysis:
     def __init__(self, file_path):
         # Init dataframe to be passed to class method
         self.source_df = pd.read_csv(file_path, index_col=False)
-        print("Source file initialised into dataframe")
-
-
-# da = DataAnalysis(uploaded_file_path)
-# ea_result = da.exploratory_analysis()
-# uav_result = da.univariate_data_visualization()
-# bda_result = da.bivariate_data_visualization()
-# da.multivariate_data_visualization() # TODO: to finish
+        ic("Source file initialised into dataframe")

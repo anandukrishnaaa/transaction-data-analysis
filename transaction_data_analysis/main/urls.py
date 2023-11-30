@@ -12,5 +12,19 @@ urlpatterns = [
     path("upload/", views.upload_file, name="upload"),
     path("dashboard/<int:file_id>/", views.dashboard, name="dashboard"),
     path("get_report/<int:report_id>/", views.get_report, name="get_report"),
-    path("get_ml/<int:report_id>/", views.get_ml, name="get_ml"),
+    path(
+        "train_main_model/<int:report_id>/",
+        views.train_main_model,
+        name="train_main_model",
+    ),
+    path(
+        "batch_run_model/<int:report_id>/",
+        views.batch_run_model,
+        name="batch_run_model",
+    ),
+    path(
+        "single_run_model/<int:report_id>/",
+        views.single_run_model,
+        name="single_run_model",
+    ),
 ]

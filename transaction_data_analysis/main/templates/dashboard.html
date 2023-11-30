@@ -4,47 +4,158 @@
 {% load custom_filters %}
 {% load static %}
 {% block title %}
-    Dashboard
+Dashboard
 {% endblock title %}
 {% block content %}
-    <h1 class="subheading"></h1>
-    <p>Data analysis result for uploaded file.</p>
-    {{ report_id }}
-    <button id="downloadPdfButton"
-            class="btn btn-primary"
-            data-file-id="{{ report_id }}">
-        Download PDF <i class="fa-regular fa-file-pdf"></i>
-    </button>
-    <a href="{% url 'get_ml' report_id=report_id %}">
-        <button>Run ML Model</button>
+<div class="dashboardBox mt-5">
+    <h2 style="text-transform: capitalize;">Here You go {{ user.first_name }}!</h2>
+    <p class="text-justify p-4">Online payments are the most common way people make transactions today. However, as
+        online payments increase, so
+        does the risk of fraud. This study aims to distinguish between fraudulent and non-fraudulent payments using a
+        dataset from Kaggle. The dataset contains information about past fraudulent transactions that can be analyzed to
+        detect fraud in online payments.</p>
+    <p class="pt-2">{{ user.first_name }} Your Report id is {{ report_id }}</p>
+<div class="actions text-center pt-3">
+    <button id="downloadPdfButton" class="btn download" data-file-id="{{ report_id }}"> Download PDF &nbsp;<i
+            class="fa-regular fa-file-pdf"></i></button>
+    <a href="{% url 'train_main_model' report_id=report_id %}">
+        <button class="btn download">Train ML Model<i class='bx bx-loader'></i></button>
     </a>
-    <a href="{% url 'get_ml' report_id=report_id %}">
-        <button>Train ML Model</button>
+    <a href="{% url 'batch_run_model' report_id=report_id %}">
+        <button class="btn download">Run ML Model<i class='bx bx-run'></i></button>
     </a>
-    <section id="charts" class="charts">
-        <div class="container-fluid mt-3 pt-5">
-            <div class="row">
-                <div class="col-md-4 box-data">{{ analysis_result.univariate_analysis.transaction_plot|to_div_html | safe }}</div>
-                <div class="col-md-4 box-data">
-                    {{ analysis_result.univariate_analysis.transaction_distribution_plot|to_div_html | safe }}
-                </div>
-                <div class="col-md-4 box-data">
-                    {{ analysis_result.univariate_analysis.non_fraud_vs_fraud_plot|to_div_html | safe }}
-                </div>
-                <div class="col-md-4 box-data">
-                    {{ analysis_result.bivariate_analysis.transaction_type_plot_1|to_div_html | safe }}
-                </div>
-                <div class="col-md-4 box-data">
-                    {{ analysis_result.bivariate_analysis.transaction_type_plot_2|to_div_html | safe }}
-                </div>
-                <div class="col-md-4 box-data">{{ analysis_result.bivariate_analysis.fraud_amount_plot|to_div_html | safe }}</div>
-                <div class="col-md-4 box-data">{{ analysis_result.bivariate_analysis.top_fraud_plot|to_div_html | safe }}</div>
-                <div class="col-md-4 box-data">
-                    {{ analysis_result.bivariate_analysis.pre_balance_transaction_plot|to_div_html | safe }}
-                </div>
-                <div class="col-md-4 box-data">{{ analysis_result.multivariate_analysis.corr_matrix_plot|to_div_html | safe }}</div>
+</div>
+    <section id="charts" class="charts pt-5" >
+        <div class="row">
+            <h3>Exploratory Analysis Result</h3>
+            <div class="col-md-8">
+                <p>The dataset includes 10 variables:</p>
+                    <ul class="text-justify">
+                        <li><i class="steps">step:</i> maps a unit of time in the real world. In this case 1 step is 1 hour of time. Total steps 744 (30 days simulation).</li>
+                        <li><i class="steps">type:</i> CASH-IN, CASH-OUT, DEBIT, PAYMENT and TRANSFER.</li>
+                        <li><i class="steps">amount:</i> amount of the transaction in local currency.</li>
+                        <li><i class="steps">nameOrig:</i> customer who started the transaction</li>
+                        <li><i class="steps">oldbalanceOrg:</i> initial balance before the transaction</li>
+                        <li><i class="steps">newbalanceOrig:</i> new balance after the transaction</li>
+                        <li><i class="steps">nameDest:</i> customer who is the recipient of the transaction</li>
+                        <li><i class="steps">oldbalanceDest:</i> initial balance recipient before the transaction. Note that there is not information for customers that start with M (Merchants).</li>
+                        <li><i class="steps">newbalanceDest:</i> new balance recipient after the transaction. Note that there is not information for customers that start with M (Merchants).</li>
+                        <li><i class="steps">isFraud:</i> This is the transactions made by the fraudulent agents inside the simulation. In this specific dataset the fraudulent behavior of the agents aims to profit by taking control or customers accounts and try to empty the funds by transferring to another account and then cashing out of the system.</li>
+                        <li><i class="steps">isFlaggedFraud:</i> The business model aims to control massive transfers from one account to another and flags illegal attempts. An illegal attempt in this dataset is an attempt to transfer more than 200.000 in a single transaction.</li>
+                    </ul>
             </div>
+            <div class="col-md-4 dataset">
+                <h5 class="text-justify">Displays information about the dataset, including data types and non-null counts.</h5>
+                <pre>{{ analysis_result.exploratory_analysis.info | safe }}</pre>
+            </div>
+            {% if analysis_result.exploratory_analysis.min_max_cols %}
+            <div class="col-md-8 datasetTable pt-4">
+                <h5>Presents the minimum and maximum values for each numerical column to understand the data range.</h5>
+                <table class="table">
+                    <tr>
+                        <td>Column</td>
+                        <td>Minimum Value</td>
+                        <td>Maximum Value</td>
+                    </tr>
+                    {% for values in analysis_result.exploratory_analysis.min_max_cols %}
+                    <tr>
+                        <td>{{ values.column }}</td>
+                        <td>{{ values.min_value }}</td>
+                        <td>{{ values.max_value }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+            {% endif %}
+            {% if analysis_result.exploratory_analysis.duplicate_check %}
+            <div class="col-md-4 pt-4">
+                <p>Duplicate count:</p> {{ analysis_result.exploratory_analysis.duplicate_check }}
+                <p>Counts the number of duplicate rows in the dataset to identify potential data integrity issues.</p>
+            </div>
+            {% endif %}
+            {% if not analysis_result.univariate_analysis.step_count.empty %}
+            <div class="col-md-4  pt-4">
+                <h5>Univariate analysis result</h5>
+                <p class="pt-3">Total no. of records</p>
+                <pre>{{ analysis_result.univariate_analysis.step_count |safe }}</pre>
+            
+            {% endif %}
+            
+            {% if analysis_result.univariate_analysis.customer_count %}
+           
+                <h4>Total customer count in dataset : {{ analysis_result.univariate_analysis.customer_count }}</h4>
+                
+            </div>
+            {% endif %}
         </div>
+        <div class="row">
+            {% if analysis_result.univariate_analysis.transaction_plot %}
+            <div class="col-md-4 box-data">
+                <h3 class="text-center">type transaction</h3>
+                {{ analysis_result.univariate_analysis.transaction_plot|to_div_html | safe }}
+            </div>
+            {% endif %}
+            {% if analysis_result.univariate_analysis.transaction_distribution_plot %}
+            <div class="col-md-4 box-data">
+                <h3 class="text-center">Count plot of transaction</h3>
+                {{ analysis_result.univariate_analysis.transaction_distribution_plot|to_div_html | safe }}
+            </div>
+            {% endif %}
+            {% if analysis_result.univariate_analysis.non_fraud_vs_fraud_plot %}
+            <div class="col-md-4 box-data">
+                <h3 class="text-center">isFraud transaction</h3>
+                {{ analysis_result.univariate_analysis.non_fraud_vs_fraud_plot|to_div_html | safe }}
+            </div>
+            {% endif %}
+            {% if analysis_result.bivariate_analysis.transaction_type_plot_1 %}
+            <div class="col-md-4 box-data">
+                <h3 class="text-center">transaction type</h3>
+                {{ analysis_result.bivariate_analysis.transaction_type_plot_1|to_div_html | safe }}
+            </div>
+            {% endif %}
+            {% if analysis_result.bivariate_analysis.transaction_type_plot_2 %}
+            <div class="col-md-4 box-data">
+                <h3 class="text-center">transaction type in percentage</h3>
+                {{ analysis_result.bivariate_analysis.transaction_type_plot_2|to_div_html | safe }}
+            </div>
+            {% endif %}
+            {% if analysis_result.bivariate_analysis.fraud_amount_plot %}
+            <div class="col-md-4 box-data">
+                <h3 class="text-center">amount quantity</h3>
+                {{ analysis_result.bivariate_analysis.fraud_amount_plot|to_div_html | safe }}
+            </div>
+            {% endif %}
+            {% if analysis_result.bivariate_analysis.top_fraud_plot %}
+            <div class="col-md-4 box-data">
+                <h3 class="text-center">Steps leads to fraudule</h3>
+                {{ analysis_result.bivariate_analysis.top_fraud_plot|to_div_html | safe }}
+            </div>
+            {% endif %}
+            {% if analysis_result.bivariate_analysis.pre_balance_transaction_plot %}
+            <div class="col-md-4 box-data">
+                <h3 class="text-center">initial cutomer pre-transaction</h3>
+                {{ analysis_result.bivariate_analysis.pre_balance_transaction_plot|to_div_html | safe }}
+            </div>
+            {% endif %}
+            {% if analysis_result.multivariate_analysis.corr_matrix_plot %}
+            <div class="col-md-4 box-data">
+                <h3 class="text-center pb-auto">correlation heatmap</h3>
+                {{ analysis_result.multivariate_analysis.corr_matrix_plot|to_div_html | safe }}
+            </div>
+            {% endif %}
+        </div>
+
     </section>
-    {% comment  %} The `|to_div_html | safe` custom filter is used to circumvent the limitation attribute `full_html=True` being set by default in the plotly to_html method. When `full_html=True` is used, the stupid plotly library renders every single plot as an *entire html page*. This helps prevent that.  {% endcomment %}
+</div>
+
+
+
+
+
+
+
+
+{% comment %} The `|to_div_html | safe` custom filter is used to circumvent the limitation attribute `full_html=True`
+being set by default in the plotly to_html method. When `full_html=True` is used, the stupid plotly library renders
+every single plot as an *entire html page*. This helps prevent that. {% endcomment %}
 {% endblock content %}

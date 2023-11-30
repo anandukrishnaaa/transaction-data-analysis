@@ -15,17 +15,16 @@
     --hover-color:#9BBEC8; */
     --text-hover:rgb(0, 0, 0);
     --background: #060606;
-    --form:#d0d6fa;
+    --form:#7e7e7e;
 }
 .dark-mode{
-    --background: #ffffff;
+    --background: #e6e6e6;
     --bg-textcolor:#000000;
+    --form:#b1b0b0;
 }
 body{
     background-color: var(--background);
     color: var(--bg-textcolor);
-   
-
 }
 html{
    overflow-x: hidden;
@@ -38,6 +37,7 @@ span{
     font-size: 45px;
     text-shadow: 1px 1px #1e1e22;
 }
+
 .container-fluid{
     padding-left: 5rem;
     margin-top: 2rem;
@@ -137,7 +137,7 @@ span{
     font-size: 1.2rem;
     color: var(--hover-color);
     text-transform: capitalize;
-    margin-bottom: 3rem;
+    /* margin-bottom: 3rem; */
 }
 .records{
     list-style: square;
@@ -188,11 +188,11 @@ td{
 .welcome-section {
     position: absolute;
     width: 100%;
-    height: 100%;
-    top: 3rem;
+    height: 85vh;
+    top: 6rem;
     left: 0;
     overflow: hidden;
-    background-image: url("../img/backgroundAnalysisImage.PNG");
+    background-image: url("../img/backgroundAnalysisImage3.PNG");
     background-size: cover;
     background-repeat: no-repeat;
 }
@@ -423,9 +423,16 @@ table{
 .dashboardBox{
     margin-bottom: 5rem;
 }
+.dashboardBox h2{
+    color: var(--hover-color);
+}
 
 
 /* donwload button in dashboard */
+.actions{
+    display: flex;
+    justify-content: space-between;
+}
 .download{
     width: 20rem;
 }
@@ -433,4 +440,102 @@ table{
 /* user file upload */
 .userFileUpload{
     margin-bottom: 5rem;
+}
+
+
+/* tain ml mode */
+thead{
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--hover-color2);
+}
+.trainmlheading{
+    color: var(--hover-color);
+    margin-top: 3rem;
+}
+#trainMlTable1{
+    display: none;
+}
+.trainMlTable2 h3{
+    color: var(--hover-color);
+    padding-top: 3rem;
+}
+.trainMlTable2 .table2{
+    background-color: var(--form);
+    overflow-x: scroll;
+}
+/* .table2::-webkit-scrollbar{
+    display: none;
+} */
+.trainMlTable3 table{
+    background-color: var(--form);
+}
+.trainMlTable3 h3{
+    color: var(--hover-color);
+    padding-top: 3rem;
+}
+.trainMlTable4 h3{
+    color: var(--hover-color);
+    padding-top: 3rem;
+}
+.trainMlTable5 h2{
+    color: var(--hover-color);
+}
+
+/* charts */
+
+.charts h3{
+    color: var(--hover-color);
+    padding-bottom: 2rem;
+}
+.charts h5{
+    color: var(--hover-color2);
+}
+.charts h4{
+    color: var(--form);
+}
+.steps{
+    color: rgb(179, 3, 3);
+}
+.datasetTable table{
+    background-color: var(--form);
+}
+
+.gaussian{
+    color: var(--hover-color2);
+}
+.anomalies h3{
+    color: var(--hover-color);
+    padding-top: 2rem;
+}
+.anomalies table{
+    background-color: var(--form);
+}
+/* customer select drop down in run ml mode */
+
+.runMlModel h3{
+    color: var(--hover-color);
+}
+.runMlModel table{
+    background-color: var(--form);
+}
+
+
+#nameOrig{
+    background-color: var(--form);
+    color: var(--text-hover);
+    border-radius: 10px;
+    margin-left: 1rem;
+}
+
+/* time in navbar */
+
+#clock {
+    font-size: 1rem;
+    width: 115px;
+    text-align: center;
+    border-radius: 20px;
+    color:var(--bg-textcolor);
+    background-color: var(--bg-main);
+    border: 4px solid var(--hover-color);
 }
