@@ -149,7 +149,10 @@ def train_main_model(request, report_id):
 
     train_main_model_result = ic(ml.train_main_model(file_path))
     # Prepare data to display in the template
-    context = {"train_main_model_result": train_main_model_result}
+    context = {
+        "report_id": report_id,
+        "train_main_model_result": train_main_model_result,
+    }
     template_name = "ml.html"
     # Render the ml.html template with the prepared data
     return render(request, template_name, context)

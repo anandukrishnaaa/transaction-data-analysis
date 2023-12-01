@@ -21,3 +21,7 @@ document.getElementById('downloadPdfButton').addEventListener('click', function 
         console.error('Element with id "charts" not found.');
     }
 });
+
+function goBack() {
+    window.history.back();
+}
