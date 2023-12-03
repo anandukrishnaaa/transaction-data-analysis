@@ -6,83 +6,80 @@
     Upload
 {% endblock title %}
 {% block content %}
-    <div class="userFileUpload mt-5">
-        {% if uploaded_file_details is None %}
-            <div class="uploadSection">
-                <form id="file-upload" method="post" enctype="multipart/form-data">
-                    <div class="uploadMessage d-flex justify-content-center pt-3">
-                        {% csrf_token %}
-                        {% bootstrap_messages %}
-                    </div>
-                    <div class="uploadtitle d-flex justify-content-center pt-3">
-                        <h2 style="text-transform: uppercase;">Upload the file to be analysed.</h2>
-                    </div>
-                    <div class="fileUpload-box d-flex justify-content-center pt-5">
-                        {% bootstrap_form file_upload_form layout='floating' %}
-                    </div>
-                    <div class="fileUpload-box d-flex justify-content-center pt-4">
-                        {% bootstrap_button button_type="submit" content="Upload" %}
-                    </div>
-                </form>
+<div class="userFileUpload mt-5">
+    {% if uploaded_file_details is None %}
+    <div class="uploadSection">
+        <form id="file-upload" method="post" enctype="multipart/form-data">
+            <div class="uploadMessage d-flex justify-content-center pt-3">
+                {% csrf_token %}
+                {% bootstrap_messages %}
             </div>
-        {% endif %}
-        {% if uploaded_file_details %}
-            <div class="uploadSection">
-                <div class="uploadedFile d-flex justify-content-center">
-                    <h2>UPLOADED FILE DETAILS</h2>
-                </div>
-                <div class="d-flex justify-content-center pt-5">
-                    <p>UPLOADED FILE SIZE IS {{ uploaded_file_details.file_size|filesizeformat }}</p>
-                </div>
-                <div class="d-flex justify-content-center pt-5">
-                    <button class="btn toDashboard"
-                            onclick="location.href='{% url 'dashboard' file_id=uploaded_file_details.file_id|default:"" %}'">
-                        Go to Dashboard
-                    </button>
-                </div>
+            <div class="uploadtitle d-flex justify-content-center pt-3">
+                <h2 style="text-transform: uppercase;">Upload the file to be analysed.</h2>
             </div>
-        {% endif %}
-        {% if user_reports %}
-            <div class="reportsTableBox">
-                <h3>Yours Reports</h3>
-                <p class="text-justify">
-                    Online payments are the most common way people make transactions today. However, as online payments increase, so
-                    does the risk of fraud. This study aims to distinguish between fraudulent and non-fraudulent payments using a
-                    dataset from Kaggle. The dataset contains information about past fraudulent transactions that can be analyzed to
-                    detect fraud in online payments.
-                </p>
-                <table class="reportsTable">
-                    <thead>
-                        <tr>
-                            <td>SL No</td>
-                            <td>File Name</td>
-                            <!--<td>File Size</td>
-                            <td>Date</td>
-                            <td>Time</td>-->
-                            <td>Action</td>
-                        </tr>
-                    </thead>
-                    {% for report in user_reports %}
-                        <tbody>
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <!-- for loop counter for serial number dynamically-->
-                                <td>{{ report.file_id.file_id }}</td>
-                                <!--file name of perviously uploaded files-->
-                                <!-- <td title="file size of {{ report.file_id.file_id }}">{{ uploaded_file_details.file_size|filesizeformat }}</td>
-                                <td title="date of upload of {{ report.file_id.file_id }}">20/11/2022</td>
-                                <td title="time of upload of {{ report.file_id.file_id }}">18:34</td>
-                             <td id="fraudLevel" title="Percentage of fraud detected" style="background-color: {% if report.fraud_level >= 80 %}red{% elif report.fraud_level >= 60 %}orange{% else %}green{% endif %};">
-                        {{ report.fraud_level }}</td> -->
-                                <td>
-                                    <a href="{% url 'get_report' report_id=report.id %}"
-                                       class="btn viewReport">VIEW</a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    {% endfor %}
-                </table>
+            <div class="fileUpload-box d-flex justify-content-center pt-5">
+                {% bootstrap_form file_upload_form layout='floating' %}
             </div>
-        {% endif %}
+            <div class="fileUpload-box d-flex justify-content-center pt-4">
+               {% bootstrap_button button_type="submit" content="Upload" %}
+            </div>
+        </form>
     </div>
+
+    {% endif %}
+    {% if uploaded_file_details %}
+    <div class="uploadSection">
+        <div class="uploadedFile d-flex justify-content-center">
+            <h2>UPLOADED FILE DETAILS</h2>
+        </div>
+        <div class="d-flex justify-content-center pt-5">
+            <p>UPLOADED FILE sIZE IS {{ uploaded_file_details.file_size|filesizeformat }}</p>
+        </div>
+        <div class="d-flex justify-content-center pt-5">
+            <button class="btn toDashboard"
+                onclick="location.href='{% url 'dashboard' file_id=uploaded_file_details.file_id|default:"" %}'">
+                Go to Dashboard
+            </button>
+        </div>
+
+    </div>
+    {% endif %}
+
+    {% if user_reports %}
+    <div class="reportsTableBox">
+        <h3>Yours Reports</h3>
+        <p class="text-justify">Online payments are the most common way people make transactions today. However, as online payments increase, so
+            does the risk of fraud. This study aims to distinguish between fraudulent and non-fraudulent payments using a
+            dataset from Kaggle. The dataset contains information about past fraudulent transactions that can be analyzed to
+            detect fraud in online payments.</p>
+        <table class="reportsTable">
+            <thead>
+                <tr>
+                    <td>SL No</td>
+                    <td>File Name</td>
+                    <!-- <td>File Size</td>
+                    <td>Date</td>
+                    <td>Time</td> -->
+                    <td>Action</td>
+                </tr>
+            </thead>
+            {% for report in user_reports %}
+            <tbody>
+                <tr>
+                    <td>{{ forloop.counter }}</td> <!-- for loop counter for serial number dynamically-->
+                    <td>{{ report.file_id.file_id }}</td> <!--file name of perviously uploaded files-->
+                    <!-- <td title="file size of {{ report.file_id.file_id }}">{{ uploaded_file_details.file_size|filesizeformat }}</td>
+                    <td title="date of upload of {{ report.file_id.file_id }}">20/11/2022</td>
+                    <td title="time of upload of {{ report.file_id.file_id }}">18:34</td> -->
+                    <!-- <td id="fraudLevel" title="Percentage of fraud detected"
+                        style="background-color: {% if report.fraud_level >= 80 %}red{% elif report.fraud_level >= 60 %}orange{% else %}green{% endif %};">
+                        {{ report.fraud_level }}</td> -->
+                    <td><a href="{% url 'get_report' report_id=report.id %}" class="btn viewReport">VIEW</a></td>
+                </tr>
+            </tbody>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+</div>
 {% endblock content %}

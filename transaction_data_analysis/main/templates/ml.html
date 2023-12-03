@@ -4,368 +4,370 @@
 {% load custom_filters %}
 {% load static %}
 {% block title %}
-    ML Dashboard
+ML Dashboard
 {% endblock title %}
 {% block content %}
-    <!-- train ml mode start -->
-    {% if train_main_model_result %}
-        <div class=" d-flex justify-content-end">
-            <a href=# style="text-decoration: none;">
-                <button class="btn back" onclick="goBack()">
-                    <i class='bx bxs-left-arrow'></i>Go Back
-                </button>
-            </a>
+<!-- train ml mode start -->
+{% if train_main_model_result %}
+
+<div class=" d-flex justify-content-end">
+    <!-- <a href=#  style="text-decoration: none;">
+        <button class="btn download">Run ML Model<i class='bx bx-run'></i></button>
+    </a> -->
+    <a href=# style="text-decoration: none;">
+        <button class="btn back"  onclick="goBack()" ><i class='bx bxs-left-arrow'></i>Go Back</button>
+    </a>
+</div>
+
+
+<h2 class="trainmlheading">Feature engineering result</h2>
+<p class="text-justify">With the available information it is hard
+    to train the model and get better results. Hence we move onto create new features by altering the existing features.
+    In this we create three functions which creates a highly relevant feature for the domain</p>
+<button class="btn download" onclick="ShowAndHide()">View more</button>
+
+<section id="trainMlTable1">
+    <div class="row">
+        <div class="col-md-3 box-data">
+            <h3>Original difference count</h3>
+            <pre>{{ train_main_model_result.orig_diff_count }}</pre>
+            <p class="text-justify"> Merchant indicator: The customer ids in receiver starts with 'M' which means that
+                they are merchants and they
+                obviously will have a lot of receiving transactions. So we also flag whenever there is a merchant
+                receiver</p>
         </div>
-        <h2 class="trainmlheading">Feature engineering result</h2>
-        <p class="text-justify">
-            With the available information it is hard
-            to train the model and get better results. Hence we move onto create new features by altering the existing features.
-            In this we create three functions which creates a highly relevant feature for the domain
-        </p>
-        <button class="btn download" onclick="ShowAndHide()">View more</button>
-        <section id="trainMlTable1">
-            <div class="row">
-                <div class="col-md-3 box-data">
-                    <h3>Original difference count</h3>
-                    <pre>{{ train_main_model_result.orig_diff_count }}</pre>
-                    <p class="text-justify">
-                        Merchant indicator: The customer ids in receiver starts with 'M' which means that
-                        they are merchants and they
-                        obviously will have a lot of receiving transactions. So we also flag whenever there is a merchant
-                        receiver
-                    </p>
-                </div>
-                <div class="col-md-3 box-data">
-                    <h3>Frequency indicator:</h3>
-                    <pre>{{ train_main_model_result.freq_dest }} </pre>
-                    <p class="text-justify">
-                        <br>
-                        Here we flag the user and not the transaction. When there is a receiver who
-                        receives money from
-                        a lot of people, it could be a trigger as it can be for some illegal games of chance or luck. Hence it
-                        is flagged
-                        when there is a receiver who receives money for more than 20 times.
-                    </p>
-                </div>
-                <div class="col-md-3 box-data">
-                    <h3>Difference in balance:</h3>
-                    <pre>{{ train_main_model_result.dest_diff_count }}</pre>
-                    <p class="text-justify">
-                        <br>
-                        It is an universal truth that the amount debited from senders account gets credited into the
-                        receivers account without any deviation in cents. But what if there is a deviation incase of the amount
-                        debited and
-                        credited. Some could be due to the charges levied by the service providers, yet we need to flag such
-                        unusual
-                        instances
-                    </p>
-                </div>
-                <div class="col-md-3 box-data">
-                    <h3>Surge indicator:</h3>
-                    <pre>{{ train_main_model_result.surge_count }}</pre>
-                    <p class="text-justify">
-                        Also we have to trigger flag when large amount are involved in the transaction.
-                        From the
-                        distribution of amount we understood that we have a lot of outliers with high amount in transactions.
-                        Hence we
-                        consider the 75th percentile(450k) as our threshold and amount which is greater than 450k will be
-                        triggered as a
-                        flag
-                    </p>
-                </div>
-            </div>
-        </section>
-        <!-- train ml table two about whole transaction details -->
-        <section class="trainMlTable2">
-            <h3>Financial Transaction Data Table Overview</h3>
+        <div class="col-md-3 box-data">
+            <h3>Frequency indicator:</h3>
+            <pre>{{ train_main_model_result.freq_dest }} </pre>
+            <p class="text-justify"><br>Here we flag the user and not the transaction. When there is a receiver who
+                receives money from
+                a lot of people, it could be a trigger as it can be for some illegal games of chance or luck. Hence it
+                is flagged
+                when there is a receiver who receives money for more than 20 times.</p>
+        </div>
+        <div class="col-md-3 box-data">
+            <h3>Difference in balance:</h3>
+            <pre>{{ train_main_model_result.dest_diff_count }}</pre>
             <p class="text-justify">
-                Comprehensive overview of financial transactions, encompassing step-wise progression,
-                transaction amounts, participant details (originator and destination), account balances pre and
-                post-transaction, fraud indicators, and transaction types. This dataset provides a detailed snapshot of
-                transactional activities, facilitating insights into potential anomalies and patterns
+                <br> It is an universal truth that the amount debited from senders account gets credited into the
+                receivers account without any deviation in cents. But what if there is a deviation incase of the amount
+                debited and
+                credited. Some could be due to the charges levied by the service providers, yet we need to flag such
+                unusual
+                instances
             </p>
-            <div class="row">
-                <div class="col-md-12">
-                    <pre class="table2">{{ train_main_model_result.data_head | safe }}</pre>
-                </div>
+        </div>
+        <div class="col-md-3 box-data">
+            <h3>Surge indicator:</h3>
+            <pre>{{ train_main_model_result.surge_count }}</pre>
+            <p class="text-justify"> Also we have to trigger flag when large amount are involved in the transaction.
+                From the
+                distribution of amount we understood that we have a lot of outliers with high amount in transactions.
+                Hence we
+                consider the 75th percentile(450k) as our threshold and amount which is greater than 450k will be
+                triggered as a
+                flag</p>
+        </div>
+    </div>
+</section>
+
+<!-- train ml table two about whole transaction details -->
+<section class="trainMlTable2">
+    <h3>Financial Transaction Data Table Overview</h3>
+    <p class="text-justify">Comprehensive overview of financial transactions, encompassing step-wise progression,
+        transaction amounts, participant details (originator and destination), account balances pre and
+        post-transaction, fraud indicators, and transaction types. This dataset provides a detailed snapshot of
+        transactional activities, facilitating insights into potential anomalies and patterns</p>
+    <div class="row">
+        <div class="col-md-12">
+            <pre class="table2">{{ train_main_model_result.data_head | safe }}</pre>
+        </div>
+    </div>
+</section>
+
+<!-- train ml table three about-->
+{% if train_main_model_result %}
+<section class="trainMlTable3">
+    <h3>Machine Learning Model Performance Metrics</h3>
+    <p class="text-justify">Performance Summary of Machine Learning Models on Dataset: Mean Accuracy, Standard
+        Deviation, and Accuracy Scores for Logistic Regression, Decision Tree, KNN, SVC, Naive Bayes, and Random Forest.
+    </p>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <td>Model</td>
+                <td>Mean Accuracy</td>
+                <td>Standard Deviation</td>
+                <td>Accuracy Scores</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for model, metrics in train_main_model_result.algo_compare_results.items %}
+            <tr>
+                <td>{{ model }}</td>
+                <td>{{ metrics.mean_accuracy }}</td>
+                <td>{{ metrics.standard_deviation }}</td>
+                <td>
+                    [
+                    {% for score in metrics.accuracy_scores %}
+                    {{ score }}
+                    {% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                    ]
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+<!-- train ml table about Hyperparameter Tuning -->
+<section class="trainMlTable4">
+    <h3>Hyperparameter Tuning with Grid estimator</h3>
+    <p class="text-justify">Hyperparameter tuning is a crucial step in optimizing the performance of machine learning
+        models. Grid search is one popular method for hyperparameter tuning, and it involves searching through a
+        predefined set of hyperparameter values to find the combination that produces the best model performance.</p>
+    <div class="row pt-3">
+        <div class="col-md-5">
+            <pre>{{ train_main_model_result.classification_report_result}}</pre>
+
+        </div>
+        <div class="col-md-7">
+            <p class="text-justify"><i class="gaussian">GaussianNB</i> is a machine learning algorithm used for
+                classification tasks,
+                particularly when dealing with continuous data assuming a Gaussian distribution.</p>
+            <p class="text-justify">The Gaussian Naive Bayes algorithm is configured with the 'var_smoothing' parameter
+                set to 0.002848035868435802. This parameter introduces a small amount of regularization to the model by
+                adding a fraction of the largest feature variance to the covariance matrix. This regularization aids in
+                maintaining numerical stability during the calculation of likelihoods, contributing to the algorithm's
+                performance in classification tasks.</p>
+            <pre>{{ train_main_model_result.nbModel_grid_estimate }}</pre>
+
+        </div>
+    </div>
+
+</section>
+<!-- show the two pie diagram of the fraud -->
+<section class="trainMlTable5">
+    <h2 class="pt-3">Balance Target Plot</h2>
+    <p class="text-justify">The balance target plot presented here is a graphical representation of the training
+        progress, focusing on the discrimination between fraud and non-fraud classes. A balance target plot is a visual
+        representation that likely depicts the
+        distribution or values of some target variable related to a balance or equilibrium. This is a part
+        of a machine learning or statistical analysis, where the model aims to achieve a balance or optimal
+        state.</p>
+    <div class="row">
+        <div class="col-md-6">
+            <pre> {{ train_main_model_result.balance_target_plot|to_div_html | safe }}</pre>
+        </div>
+        <div class="col-md-6 pt-4">
+            <pre>{{ train_main_model_result.check_balance_target_plot|to_div_html | safe }}</pre>
+        </div>
+    </div>
+
+    <!-- end of two pie charts -->
+
+    <!-- confusion matrix diagram -->
+
+    <div class="mlgraph">
+        <h2>Confusion Matrix Heatmap</h2>
+        <p class="text-justify">A confusion matrix heatmap is a visual representation of a confusion matrix, which is a
+            table used in machine learning to evaluate the performance of a classification algorithm. A confusion matrix
+            shows the number of True Positives (TP), True Negatives (TN), False Positives (FP), and False Negatives (FN)
+            for a set of predictions compared to the actual outcomes.</p>
+        <pre>{{ train_main_model_result.confusion_matrix_plot|to_div_html | safe }}</pre>
+    </div>
+</section>
+
+{% endif %}
+<!-- end of confusion matrix diagram -->
+
+
+
+
+
+
+<!-- Run ml model Starting section -->
+{% if batch_run_model_result %}
+<div class=" d-flex justify-content-end">
+    <a href=# style="text-decoration: none;">
+        <button class="btn back" onclick="goBack()"><i class='bx bxs-left-arrow'></i>Go Back</button>
+    </a>
+</div>
+{% if batch_run_model_result.customer_ids_list %}
+<section class="runMlModel">
+    <h2 class="trainmlheading d-flex justify-content-center">Run ML Model</h2>
+    <form class="cutomerSelect" method="post" action="{% url 'single_run_model' batch_run_model_result.report_id %}">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-12 d-flex justify-content-center mt-5">
+                <label for="nameOrig"><h4>Select a Customer:</h4></label>
+                <select id="nameOrig" name="nameOrig" >
+                    {% for customer_id in batch_run_model_result.customer_ids_list %}
+                    <option value="{{ customer_id }}">{{ customer_id }}</option>
+                    {% endfor %}
+                </select>
+              </div> 
+              <div class="col-md-12 d-flex justify-content-center">
+                  <input type="submit" value="Submit" class="btn btn-submit mt-5">
             </div>
-        </section>
-        <!-- train ml table three about-->
-        {% if train_main_model_result %}
-            <section class="trainMlTable3">
-                <h3>Machine Learning Model Performance Metrics</h3>
-                <p class="text-justify">
-                    Performance Summary of Machine Learning Models on Dataset: Mean Accuracy, Standard
-                    Deviation, and Accuracy Scores for Logistic Regression, Decision Tree, KNN, SVC, Naive Bayes, and Random Forest.
-                </p>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <td>Model</td>
-                            <td>Mean Accuracy</td>
-                            <td>Standard Deviation</td>
-                            <td>Accuracy Scores</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for model, metrics in train_main_model_result.algo_compare_results.items %}
-                            <tr>
-                                <td>{{ model }}</td>
-                                <td>{{ metrics.mean_accuracy }}</td>
-                                <td>{{ metrics.standard_deviation }}</td>
-                                <td>
-                                    [
-                                    {% for score in metrics.accuracy_scores %}
-                                        {{ score }}
-                                        {% if not forloop.last %},{% endif %}
-                                    {% endfor %}
-                                    ]
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </section>
+        </div>
+    </form>
+    {% endif %}
+
+    <h5 class="mt-5" style="color: rgb(172, 1, 1);">Most frauded amount : {{ batch_run_model_result.most_fraudulent }}</h5>
+    <div class="row mt-5">
+        {% if batch_run_model_result.predict_fraud_prone_customers %}
+        <div class="col-md-6">
+            <h3>Most prone to fraud</h3>
+            <table class="table table-bordered mt-3">
+                <thead>
+                    <tr>
+                        <td>Customer ID</td>
+                        <td>Fraud Prone Probability</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in batch_run_model_result.predict_fraud_prone_customers %}
+                    <tr>
+                        <td>{{ entry.customer_id }}</td>
+                        <td>{{ entry.fraud_probability|stringformat:".2f" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
         {% endif %}
-        <!-- train ml table about Hyperparameter Tuning -->
-        <section class="trainMlTable4">
-            <h3>Hyperparameter Tuning with Grid estimator</h3>
-            <p class="text-justify">
-                Hyperparameter tuning is a crucial step in optimizing the performance of machine learning
-                models. Grid search is one popular method for hyperparameter tuning, and it involves searching through a
-                predefined set of hyperparameter values to find the combination that produces the best model performance.
-            </p>
-            <div class="row pt-3">
-                <div class="col-md-5">
-                    <pre>{{ train_main_model_result.classification_report_result}}</pre>
-                </div>
-                <div class="col-md-7">
-                    <p class="text-justify">
-                        <i class="gaussian">GaussianNB</i> is a machine learning algorithm used for
-                        classification tasks,
-                        particularly when dealing with continuous data assuming a Gaussian distribution.
-                    </p>
-                    <p class="text-justify">
-                        The Gaussian Naive Bayes algorithm is configured with the 'var_smoothing' parameter
-                        set to 0.002848035868435802. This parameter introduces a small amount of regularization to the model by
-                        adding a fraction of the largest feature variance to the covariance matrix. This regularization aids in
-                        maintaining numerical stability during the calculation of likelihoods, contributing to the algorithm's
-                        performance in classification tasks.
-                    </p>
-                    <pre>{{ train_main_model_result.nbModel_grid_estimate }}</pre>
-                </div>
-            </div>
-        </section>
-        <!-- show the two pie diagram of the fraud -->
-        <section class="trainMlTable5">
-            <h2 class="pt-3">Balance Target Plot</h2>
-            <p class="text-justify">
-                The balance target plot presented here is a graphical representation of the training
-                progress, focusing on the discrimination between fraud and non-fraud classes. A balance target plot is a visual
-                representation that likely depicts the
-                distribution or values of some target variable related to a balance or equilibrium. This is a part
-                of a machine learning or statistical analysis, where the model aims to achieve a balance or optimal
-                state.
-            </p>
-            <div class="row">
-                <div class="col-md-6">
-                    <pre> {{ train_main_model_result.balance_target_plot|to_div_html | safe }}</pre>
-                </div>
-                <div class="col-md-6 pt-4">
-                    <pre>{{ train_main_model_result.check_balance_target_plot|to_div_html | safe }}</pre>
-                </div>
-            </div>
-            <!-- end of two pie charts -->
-            <!-- confusion matrix diagram -->
-            <div class="mlgraph">
-                <h2>Confusion Matrix Heatmap</h2>
-                <p class="text-justify">
-                    A confusion matrix heatmap is a visual representation of a confusion matrix, which is a
-                    table used in machine learning to evaluate the performance of a classification algorithm. A confusion matrix
-                    shows the number of True Positives (TP), True Negatives (TN), False Positives (FP), and False Negatives (FN)
-                    for a set of predictions compared to the actual outcomes.
-                </p>
-                <pre>{{ train_main_model_result.confusion_matrix_plot|to_div_html | safe }}</pre>
-            </div>
-        </section>
-    {% endif %}
-    <!-- end of confusion matrix diagram -->
-    <!-- Run ml model Starting section -->
-    {% if batch_run_model_result %}
-        <div class=" d-flex justify-content-end">
-            <a href=# style="text-decoration: none;">
-                <button class="btn back" onclick="goBack()">
-                    <i class='bx bxs-left-arrow'></i>Go Back
-                </button>
-            </a>
+        {% if batch_run_model_result.predict_least_fraud_prone_customers %}
+        <div class="col-md-6">
+            <h3>Least prone to fraud</h3>
+            <table class="table table-bordered mt-3">
+                <thead>
+                    <tr>
+                        <td>Customer ID</td>
+                        <td>Fraud Prone Probability</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in batch_run_model_result.predict_least_fraud_prone_customers %}
+                    <tr>
+                        <td>{{ entry.customer_id }}</td>
+                        <td>{{ entry.fraud_probability|stringformat:".2f" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
-        {% if batch_run_model_result.customer_ids_list %}
-            <section class="runMlModel">
-                <h2 class="trainmlheading d-flex justify-content-center">Run ML Model</h2>
-                <form class="cutomerSelect"
-                      method="post"
-                      action="{% url 'single_run_model' batch_run_model_result.report_id %}">
-                    {% csrf_token %}
-                    <div class="row">
-                        <div class="col-md-12 d-flex justify-content-center mt-5">
-                            <label for="nameOrig">
-                                <h4>Select a Customer:</h4>
-                            </label>
-                            <select id="nameOrig" name="nameOrig">
-                                {% for customer_id in batch_run_model_result.customer_ids_list %}
-                                    <option value="{{ customer_id }}">{{ customer_id }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-12 d-flex justify-content-center">
-                            <input type="submit" value="Submit" class="btn btn-submit mt-5">
-                        </div>
-                    </div>
-                </form>
+        {% endif %}
+    </div>
+    <div class="row pt-5 d-flex justify-content-center">
+        {% if batch_run_model_result.compute_fraud_probabilities %}
+        <div class="col-md-9">
+            <h3 class="d-flex justify-content-center">First 50 customers in dataset fraud prone probability</h3>
+            <table class="table table-bordered mt-3">
+                <thead>
+                    <tr>
+                        <td>Customer ID</td>
+                        <td>Fraud Prone Probability</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in batch_run_model_result.compute_fraud_probabilities %}
+                    <tr>
+                        <td>{{ entry.customer_id }}</td>
+                        <td>{{ entry.fraud_probability|stringformat:".2f" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        {% if batch_run_model_result.all_frauds %}
+   
+            <h3 class="d-flex justify-content-center mt-5">Confirmed Frauds</h3>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <td>Confirmed frauds</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer_id in batch_run_model_result.all_frauds %}
+                    <tr>
+                        <td>{{ customer_id }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             {% endif %}
-            <h5 class="mt-5" style="color: rgb(172, 1, 1);">Most frauded amount : {{ batch_run_model_result.most_fraudulent }}</h5>
-            <div class="row mt-5">
-                {% if batch_run_model_result.predict_fraud_prone_customers %}
-                    <div class="col-md-6">
-                        <h3>Most prone to fraud</h3>
-                        <table class="table table-bordered mt-3">
-                            <thead>
-                                <tr>
-                                    <td>Customer ID</td>
-                                    <td>Fraud Prone Probability</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for entry in batch_run_model_result.predict_fraud_prone_customers %}
-                                    <tr>
-                                        <td>{{ entry.customer_id }}</td>
-                                        <td>{{ entry.fraud_probability|stringformat:".2f" }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% endif %}
-                {% if batch_run_model_result.predict_least_fraud_prone_customers %}
-                    <div class="col-md-6">
-                        <h3>Least prone to fraud</h3>
-                        <table class="table table-bordered mt-3">
-                            <thead>
-                                <tr>
-                                    <td>Customer ID</td>
-                                    <td>Fraud Prone Probability</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for entry in batch_run_model_result.predict_least_fraud_prone_customers %}
-                                    <tr>
-                                        <td>{{ entry.customer_id }}</td>
-                                        <td>{{ entry.fraud_probability|stringformat:".2f" }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% endif %}
-            </div>
-            <div class="row pt-5 d-flex justify-content-center">
-                {% if batch_run_model_result.compute_fraud_probabilities %}
-                    <div class="col-md-9">
-                        <h3 class="d-flex justify-content-center">First 50 customers in dataset fraud prone probability</h3>
-                        <table class="table table-bordered mt-3">
-                            <thead>
-                                <tr>
-                                    <td>Customer ID</td>
-                                    <td>Fraud Prone Probability</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for entry in batch_run_model_result.compute_fraud_probabilities %}
-                                    <tr>
-                                        <td>{{ entry.customer_id }}</td>
-                                        <td>{{ entry.fraud_probability|stringformat:".2f" }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% if batch_run_model_result.all_frauds %}
-                            <h3 class="d-flex justify-content-center mt-5">Confirmed Frauds</h3>
-                            <table class="table table-bordered table-striped">
-                                <thead>
-                                    <tr>
-                                        <td>Confirmed frauds</td>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for customer_id in batch_run_model_result.all_frauds %}
-                                        <tr>
-                                            <td>{{ customer_id }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        {% endif %}
-                    </div>
-                {% endif %}
-            </div>
-        </section>
-    {% endif %}
-    <!-- anomalies and pattern  -->
-    {% if single_run_model_result %}
-        <div class=" d-flex justify-content-end">
-            <a href=# style="text-decoration: none;">
-                <button class="btn back" onclick="goBack()">
-                    <i class='bx bxs-left-arrow'></i>Go Back
-                </button>
-            </a>
         </div>
-        <section class="anomalies">
-            <h2 class="trainmlheading">Anomalies and patterns</h2>
-            <p class="text-justify">
-                The Anomalies and Patterns Table serves as a comprehensive repository for
-                identifying and analyzing irregularities and recurring trends within a dataset, system, or process. This
-                dynamic table is a vital tool for data scientists, analysts, and decision-makers seeking to gain
-                valuable insights into the behavior and characteristics of the data under scrutiny.
-            </p>
-            <h4>Report id : {{ single_run_model_result.report_id }}</h4>
-            <h4>Customer id : {{ single_run_model_result.customer_id }}</h4>
-            <div class="row">
-                <div class="col-md-12">
-                    <h3></h3>
-                    {{ single_run_model_result.anomalies_and_patterns_for_customer| safe }}
-                </div>
-                <div class="col-md-12">
-                    <h3>Probabilities</h3>
-                    {% if single_run_model_result.customer_probabilities %}
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <td>Probability</td>
-                                    <td>Value</td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Has Been Defrauded</td>
-                                    <td>{{ single_run_model_result.customer_probabilities.has_been_frauded|stringformat:".10f" }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Has Committed Fraud</td>
-                                    <td>{{ single_run_model_result.customer_probabilities.has_committed_fraud|stringformat:".10f" }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Victim Probability</td>
-                                    <td>{{ single_run_model_result.customer_probabilities.victim_probability|stringformat:".10f" }}</td>
-                                </tr>
-                                <tr>
-                                    <td>Perpetrator Probability</td>
-                                    <td>{{ single_run_model_result.customer_probabilities.perpetrator_probability|stringformat:".10f" }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    {% endif %}
-                </div>
-            </div>
-        </section>
-    {% endif %}
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+
+
+
+
+
+
+
+<!-- anomalies and pattern  -->
+{% if single_run_model_result %}
+<div class=" d-flex justify-content-end">
+    <a href=# style="text-decoration: none;">
+        <button class="btn back" onclick="goBack()"><i class='bx bxs-left-arrow'></i>Go Back</button>
+    </a>
+</div>
+<section class="anomalies">
+    <h2 class="trainmlheading">Anomalies and patterns</h2>
+    <p class="text-justify"> The Anomalies and Patterns Table serves as a comprehensive repository for
+        identifying and analyzing irregularities and recurring trends within a dataset, system, or process. This
+        dynamic table is a vital tool for data scientists, analysts, and decision-makers seeking to gain
+        valuable insights into the behavior and characteristics of the data under scrutiny.</p>
+    <h4>Report id : {{ single_run_model_result.report_id }}</h4>
+    <h4>Customer id : {{ single_run_model_result.customer_id }} </h4>
+    <div class="row">
+        <div class="col-md-12">
+            <h3></h3>
+            {{ single_run_model_result.anomalies_and_patterns_for_customer| safe }}
+        </div>
+        <div class="col-md-12">
+            <h3>Probabilities</h3>
+            {% if single_run_model_result.customer_probabilities %}
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <td>Probability</td>
+                        <td>Value</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Has Been Defrauded</td>
+                        <td>{{ single_run_model_result.customer_probabilities.has_been_frauded|stringformat:".10f" }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Has Committed Fraud</td>
+                        <td>{{ single_run_model_result.customer_probabilities.has_committed_fraud|stringformat:".10f" }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Victim Probability</td>
+                        <td>{{ single_run_model_result.customer_probabilities.victim_probability|stringformat:".10f" }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Perpetrator Probability</td>
+                        <td>{{ single_run_model_result.customer_probabilities.perpetrator_probability|stringformat:".10f" }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
 {% endblock content %}

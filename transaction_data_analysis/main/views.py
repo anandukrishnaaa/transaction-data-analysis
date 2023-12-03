@@ -1,6 +1,7 @@
 # Create your views here.
 
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -45,7 +46,6 @@ def login_view(request):
     return render(request, template_name, context)
 
 
-@login_required
 def upload_file(request):
     if request.method == "POST":
         file_upload_form = UploadFileForm(request.POST, request.FILES)
@@ -55,38 +55,38 @@ def upload_file(request):
             file_uploaded = FileUpload.objects.create(
                 user=request.user, file_id=uploaded_file.name, file_path=uploaded_file
             )
+            
             uploaded_file_details = {
-                "file_id": ic(file_uploaded.id),
-                "file_size": ic(size),
+                "file_id": file_uploaded.id,
+                "file_size": size,
             }
+            print(file_uploaded.id)
             context = {
-                "uploaded_file_details": ic(uploaded_file_details),
-                "user_reports": ic(Report.objects.filter(user=request.user)),
-            }
-
+            "uploaded_file_details": ic(uploaded_file_details),
+            "user_reports": ic(Report.objects.filter(user=request.user)),
+        }
+            messages.success(request, 'File uploaded successfully!')
             template_name = "upload.html"
             return render(
                 request,
                 template_name,
                 context,
             )
-    else:
-        file_upload_form = UploadFileForm()
-        # Fetch reports associated with current user
-        user_reports = Report.objects.filter(user=request.user)
-        context = {
-            "file_upload_form": ic(file_upload_form),
-            "uploaded_file_details": None,
-            "user_reports": ic(user_reports),
-        }
-        template_name = "upload.html"
+        else:
+            # Form is not valid, display an error message
+            messages.error(request, 'File is not valid. Please upload a CSV file.')
+    # Rest of your view logic for GET requests
+    file_upload_form = UploadFileForm()
+    user_reports = Report.objects.filter(user=request.user)
 
-        return render(
-            request,
-            template_name,
-            context,
-        )
 
+    context = {
+        "file_upload_form": file_upload_form,
+        "uploaded_file_details": None,
+        "user_reports": user_reports,
+    }
+
+    return render(request, "upload.html", context)
 
 @login_required
 def dashboard(request, file_id):
@@ -149,10 +149,7 @@ def train_main_model(request, report_id):
 
     train_main_model_result = ic(ml.train_main_model(file_path))
     # Prepare data to display in the template
-    context = {
-        "report_id": report_id,
-        "train_main_model_result": train_main_model_result,
-    }
+    context = {"train_main_model_result": train_main_model_result}
     template_name = "ml.html"
     # Render the ml.html template with the prepared data
     return render(request, template_name, context)

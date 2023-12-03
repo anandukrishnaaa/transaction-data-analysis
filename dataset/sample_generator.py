@@ -13,6 +13,7 @@ for i in range(num_files):
     # Read the next chunk
     df_chunk = next(input_reader)
 
-    # Save to a new CSV file
-    output_file_path = f"sample_file_{i + 1}.csv"
+    # Save to a new CSV file with headers
+    output_file_path = f"test_statement_{i + 1}.csv"
     df_chunk.to_csv(output_file_path, index=False)
+
